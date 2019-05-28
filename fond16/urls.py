@@ -20,8 +20,8 @@ from app104.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^$', load_data, name='load_data'),
-    url(r'^base/$', base, name='base'),
+    url(r'^load_cache/$', load_data, name='load_data'),
+    url(r'^$', base, name='base'),
     url(r'^coord/$', coordination, name='coordination'),
     url(r'^coord/illness/$', coord_illness, name='coord_illness'),
     url(r'^coord/death/$', coord_death, name='coord_death'),

@@ -97,6 +97,7 @@ def coord_illness(request):
     :param request:
     :return:
     """
+    
     return render(request,'coordination_illness.html')
 
 def coord_death(request):

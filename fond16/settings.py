@@ -25,7 +25,7 @@ SECRET_KEY = '$bwn(t&j+5&$2%k71xx13n=5=in=pie0da!8*@!j*he@s7h5jb'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.51', 'localhost', '192.168.1.79', '192.168.1.157']
+ALLOWED_HOSTS = ['192.168.1.51', 'localhost', '192.168.1.79', '192.168.1.157', '192.168.0.222', '192.168.0.3']
 
 
 # Application definition
