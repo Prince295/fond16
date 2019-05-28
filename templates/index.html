@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block main %}
+        <div class="gtco-loader"></div>
+        <div class="gtco-section">
+            <div class="gtco-container">
+                <div class="row">
+                    <table id="table1" hidden="true" onloadstart="">
+                        <caption>Контроль поручения</caption>
+                        <tr>
+                            <th rowspan="2" colspan="2" class="first">Заболевания</th>
+                            {% for val in lpus.values %}
+                            <th colspan="3">{{ val }}</th>
+
+                            {% endfor %}
+                            <th colspan="3">Итого</th>
+
+                        </tr>
+                        <tr>
+                        {% for i in lpus.keys %}
+                            <td>КС</td>
+                            <td>СМП</td>
+                            <td>АМП</td>
+                        {% endfor %}
+                            <td>КС</td>
+                            <td>СМП</td>
+                            <td>АМП</td>
+                        </tr>
+                        {% for row in data %}
+                            <tr>
+                                {%  for item in row %}
+                                <td>{{ item }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+
+                    </table>
+                </div>
+            </div>
+        </div>
+{% endblock main %}
+
+		
+
+

@@ -1,0 +1,46 @@
+{%  extends 'base.html' %}
+{%  block main %}
+
+    <div class="gtco-section">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-8 col-md-offset-2 gtco-heading text-center">
+						<h2>Создание поручения</h2>
+
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-6">
+						<form action="#">
+							<div class="form-group">
+								<label for="name">Дата</label>
+								<input type="date" class="form-control" id="date">
+							</div>
+							<div class="form-group">
+								<label for="name">№</label>
+								<input type="text" class="form-control" id="number">
+							</div>
+                            <div class="form-group">
+								<label for="name">ФИО</label>
+								<input type="text" class="form-control" id="name">
+							</div>
+                            <div class="form-group">
+								<label for="name">Должность</label>
+								<input type="text" class="form-control" id="speciality">
+							</div>
+							<div class="form-group">
+								<label for="message">Текст поручения</label>
+								<textarea name="" id="message" cols="50" rows="20" class="form-control"></textarea>
+							</div>
+							<div class="form-group">
+								<input type="submit" class="btn btn btn-special" value="Сохранить">
+							</div>
+						</form>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+
+{% endblock main %}

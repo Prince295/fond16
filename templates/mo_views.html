@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block main %}
+
+
+                <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px; margin-bottom: 20px">
+                    <a id='btntable1' class="btn btn-white" href="/mo_views/table/" style="target: '#btntable2'; margin-left: fill;">Таблица</a>
+                    <a id='btntable2' class="btn btn-white" href="/mo_views/control_table/" style="target: '#btntable1'; margin-right: fill;" >Контроль</a>
+
+                </div>
+
+
+
+    {% block views_main %}
+    {% endblock views_main %}
+{% endblock main %}
+

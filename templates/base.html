@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Виста - сервис интеграции с ТФОМС ЛО</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Сервис интеграции" />
+	<meta name="keywords" content="vista-med" />
+	<meta name="author" content="ivankochegarov1@gmail.com" />
+
+    {% load static %}
+	<link href="https://fonts.googleapis.com/css?family=Raleway:100,300,400,700" rel="stylesheet">
+
+	<!-- Animate.css -->
+	<link rel="stylesheet" href="{% static "/css/animate.css" %}">
+	<!-- Icomoon Icon Fonts-->
+	<link rel="stylesheet" href="{% static "css/icomoon.css" %}">
+	<!-- Themify Icons-->
+	<link rel="stylesheet" href="{% static "css/themify-icons.css" %}">
+	<!-- Bootstrap  -->
+	<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+
+	<!-- Magnific Popup -->
+	<link rel="stylesheet" href="/static/css/magnific-popup.css">
+
+	<!-- Owl Carousel  -->
+	<link rel="stylesheet" href="/static/css/owl.carousel.min.css">
+	<link rel="stylesheet" href="/static/css/owl.theme.default.min.css">
+
+	<!-- Theme style  -->
+	<link rel="stylesheet" href="/static/css/style.css">
+
+
+
+	<!-- Modernizr JS -->
+	<script src="/static/js/modernizr-2.6.2.min.js"></script>
+	<!-- FOR IE9 below -->
+	<!--[if lt IE 9]>
+	<script src="/static/js/respond.min.js"></script>
+	<![endif]-->
+
+	</head>
+	<body>
+
+	<div class="gtco-loader"></div>
+
+	<div id="page">
+
+		<nav class="gtco-nav" role="navigation">
+			<div class="gtco-container">
+
+				<div class="row">
+					<div class="col-sm-2 col-xs-12">
+						<div id="gtco-logo"><a href="index.html"><img src="{% static "/images/vista_logo.png" %}" alt="vista"></a></div>
+					</div>
+					<div class="col-xs-10 text-right menu-1">
+						<ul>
+							<li class="has-dropdown">
+                                <a href="/coordination/">Координационный совет</a>
+                                <ul class="dropdown">
+                                    <li><a href="/coord/illness/">Заболеваемость</a></li>
+                                    <li><a href="/coord/death/">Смертность</a></li>
+                                </ul>
+                            </li>
+							<li class="has-dropdown">
+								<a href="/mo_views/">Выгрузка</a>
+								<ul class="dropdown">
+									<li><a href="/mo_views/table/">Таблица</a></li>
+									<li><a href="/mo_views/control_table">Контроль</a></li>
+
+								</ul>
+							</li>
+							<li class="has-dropdown">
+								<a href="/documents/">Поручения</a>
+								<ul class="dropdown">
+									<li><a href="/documents/all/">Все поручения</a></li>
+									<li><a href="/documents/new/">+Создать новое</a></li>
+
+								</ul>
+							</li>
+
+						</ul>
+					</div>
+				</div>
+
+			</div>
+		</nav>
+
+		<header id="gtco-header" class="gtco-cover" role="banner">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-12 col-md-offset-0 text-left">
+						<div class="display-t">
+							<div class="display-tc">
+								<div class="row">
+									<div class="col-md-5 text-center header-img">
+										<img src="/static/images/cube.png" alt="Free HTML5 Website Template by GetTemplates.co">
+									</div>
+									<div class="col-md-7 copy">
+										<h1>Виста.Сервис</h1>
+										<p>Программный комплекс по системе персонифицированного учета объемов оказанной медицинской помощи и оценки её качества в системе обязательного медицинского страхования Ленинградской области</p>
+										<p><a id='load_form' href="/coordination/" class="btn btn-white" onclick="showDoc();">Координационный совет</a>
+                                        <a href="/load/" class="btn btn-white" onclick="showDoc();">Выгрузка</a>
+                                        <a href="/mo_views/" class="btn btn-white" onclick="showDoc();">Показать</a></p>
+                                        {% block table %}
+                                        {% endblock table %}
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>
+		<!-- END #gtco-header -->
+
+        {% block main %}
+        {% endblock main %}
+
+		<footer id="gtco-footer" class="gtco-section" role="contentinfo">
+			<div class="gtco-container">
+				<div class="row row-pb-md">
+					<div class="col-md-8 col-md-offset-2 gtco-cta text-center">
+						<h3>"ВИСТА-МЕД"</h3>
+					</div>
+				</div>
+				<div class="row row-pb-md">
+					<div class="col-md-4 gtco-widget gtco-footer-paragraph">
+
+					</div>
+					<div class="col-md-4 gtco-footer-link">
+						<div class="row">
+							<div class="col-md-6">
+							</div>
+							<div class="col-md-6">
+								<p>
+									<a href="tel://1234567890">+1 234 4565 2342</a> <br>
+									<a href="#">admin@vista.com</a>
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 gtco-footer-subscribe">
+						<form class="form-inline">
+						  <div class="form-group">
+						    <label class="sr-only" for="exampleInputEmail3">Адрес электронной почты</label>
+						    <input type="email" class="form-control" id="" placeholder="Email">
+						  <button type="submit" class="btn btn-primary">Отправить</button>
+                          </div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="gtco-copyright">
+				<div class="gtco-container">
+					<div class="row">
+						<div class="col-md-6 text-left">
+							<p><small>&copy; ООО "Виста-мед"</small></p>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</footer>
+
+	</div>
+
+	<div class="gototop js-top">
+		<a href="#" class="js-gotop"><i class="icon-arrow-up"></i></a>
+	</div>
+
+	<!-- jQuery -->
+	<script src="/static/js/jquery.min.js"></script>
+	<!-- jQuery Easing -->
+	<script src="/static/js/jquery.easing.1.3.js"></script>
+	<!-- Bootstrap -->
+	<script src="/static/js/bootstrap.min.js"></script>
+	<!-- Waypoints -->
+	<script src="/static/js/jquery.waypoints.min.js"></script>
+	<!-- Carousel -->
+	<script src="/static/js/owl.carousel.min.js"></script>
+	<!-- Magnific Popup -->
+	<script src="/static/js/jquery.magnific-popup.min.js"></script>
+	<script src="/static/js/magnific-popup-options.js"></script>
+	<!-- Main -->
+	<script src="/static/js/main.js"></script>
+    <script src="/static/js/onload.js"></script>
+
+	</body>
+</html>
+
