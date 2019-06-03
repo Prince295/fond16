@@ -1,3 +1,35 @@
 {% extends 'base.html' %}
 {% block main %}
-{% endblock %}
+     <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px; margin-bottom: 20px">
+                    <a id='coord_d_1' class="btn btn-cta" href="/coordination_death/adult/" style="target: '#coord_d_1'; font-family: 'Calibri Light' ">18 - 60 лет</a>
+                    <a id='coord_d_2' class="btn btn-cta" href="/coordination_death/pensioners/" style="target: 'coord_d_2'; font-family: 'Calibri Light' " >От 61 года</a>
+                    <a id='coord_d_3' class="btn btn-cta" href="/coordination_death/child/" style="target: '#coord_d_3'; font-family: 'Calibri Light' " >Дети старше 1 года</a>
+                    <a id='coord_d_4' class="btn btn-cta" href="/coordination_death/babies/" style="target: '#coord_d_4'; font-family: 'Calibri Light' " >Дети до 1 года</a>
+                    <a id='coord_d_5' class="btn btn-cta" href="/coordination_death/all/" style="target: '#coord_d_5'; font-family: 'Calibri Light'; font-weight: bold; color: #00b8d4; " >Всего</a>
+
+                </div>
+    <div class="gtco-loader"></div>
+
+                <div class="row">
+                    <table id="table_death" class="table-striped table-death"; style="margin-left: 30px; margin-right: 30px; margin-bottom: 100px; font-family: 'Calibri Light'">
+
+                        <tr>
+                            <th colspan="2" class="first table-death-head">Заболевания</th>
+                            <th rowspan="2" class="first table-death-head">Код по МКБ-10</th>
+                            <th colspan="4" class="first table-death-head">Количество случаев, в том числе:</th>
+
+                        </tr>
+                        <tr>
+                            <th class="table-death-head">Код строки</th>
+                            <th class="table-death-head">Заболевания, явившиеся причиной смерти</th>
+                            <th class="table-death-head">Амбулаторно-поликлинической медицинской помощи</th>
+                            <th class="table-death-head">Стационарной медицинской помощи</th>
+                            <th class="table-death-head">Стационарнозамещающей медицинской помощи</th>
+                            <th class="table-death-head">Скорой медицинской помощи вне медицинской организации</th>
+                        </tr>
+
+
+                    </table>
+                </div>
+
+{% endblock main%}

@@ -31,5 +31,6 @@ urlpatterns = [
     url(r'^mo_views/control_table/$', mo_views_ctrl_tbl, name='control_table'),
     url(r'^documents/$', documents_base, name='documents'),
     url(r'^documents/all/$', documents_all, name='docs_all'),
-    url(r'^documents/new/$', documents_new, name='docs_new')
+    url(r'^documents/new/$', documents_new, name='docs_new'),
+    url(r'^coordination_death/(\w+)/$', coord_death_urls, name='coord_death_tables')
 ]

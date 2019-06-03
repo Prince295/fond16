@@ -25,6 +25,17 @@ table:target {
   background:  linear-gradient(to right, #3dcdbc 0%, #33a1bd 100%);
   color: #ffffff;
 }
+
+.table-death {
+  border-collapse: collapse;
+  line-height: 1.5;
+  font-family: 'Calibri Light';
+}
+.table-death-head {
+  font-weight: bold;
+  text-shadow: #00b3ee;
+}
+
 caption {
   font-family: 'icomoon';
   font-weight: bold;
@@ -615,7 +626,7 @@ h1, h2, h3, h4, h5, h6, figure {
 }
 
 #gtco-footer {
-  background: #262626;
+  background: #fff;
   padding: 7em 0 0 0 !important;
   margin-bottom: 0 !important;
   width: 100%;

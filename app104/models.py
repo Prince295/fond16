@@ -13,8 +13,8 @@ class SLS(models.Model):
     goalId = models.CharField(db_column='P_CEL', max_length=3, verbose_name='цель посещения')
     history = models.CharField(db_column='NHISTORY', max_length=50, verbose_name='история')
     period = models.PositiveSmallIntegerField(db_column='P_PER', verbose_name='период')
-    dateBeg = models.DateField(db_column='DATE_1', verbose_name='дата начала')
-    dateEnd = models.DateField(db_column='DATE_2', verbose_name='дата окончания')
+    dateBeg = models.DateTimeField(db_column='DATE_1', verbose_name='дата начала')
+    dateEnd = models.DateTimeField(db_column='DATE_2', verbose_name='дата окончания')
     kd = models.IntegerField(db_column='KD', verbose_name='-----')
     mkb = models.CharField(db_column='DS0', max_length=10, verbose_name='МКБ')
     mkbExtra = models.CharField(db_column='DS1', max_length=10, verbose_name='МКБ-доп')
@@ -51,6 +51,22 @@ class Nosologies(models.Model):
     class Meta:
         db_table='"NSLGS"'
 
+class Patients(models.Model):
+    client_id = models.CharField(db_column='ID_PAC', max_length=36, verbose_name='Айди пациента')
+    date_birth = models.DateTimeField(db_column='DR', verbose_name='Дата рождения')
+
+    class Meta:
+        db_table='"PACIENTS"'
+
+class Lpu_names(models.Model):
+    lpu_id = models.BigIntegerField(db_column='MCOD', blank=False, verbose_name='Код ЛПУ')
+    name_full = models.CharField(db_column='NAM_MOP', max_length=254, verbose_name='Название')
+    name_short = models.CharField(db_column='NAM_MOK', max_length=254, verbose_name='Сокращенное название')
+    address = models.CharField(db_column='ADDR_J', max_length=254, verbose_name='Адрес')
+    is_deleted = models.PositiveSmallIntegerField(db_column='IS_DELETED', default=0, verbose_name='Удален')
+
+    class Meta:
+        db_table='"F003_LO"'
 
 
 

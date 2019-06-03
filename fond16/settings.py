@@ -83,6 +83,14 @@ DATABASES = {
         'PASSWORD': 'password1234',
         'HOST': '192.168.0.139',
         'PORT': '1523'
+    },
+    'dictadmin': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'ORCL2',
+        'USER': 'DICTADMIN',
+        'PASSWORD': 'password1234',
+        'HOST': '192.168.0.139',
+        'PORT': '1523'
     }
 }
 
