@@ -27,7 +27,13 @@
                             <th class="table-death-head">Стационарнозамещающей медицинской помощи</th>
                             <th class="table-death-head">Скорой медицинской помощи вне медицинской организации</th>
                         </tr>
-
+                        {% for row in data %}
+                            <tr>
+                                {%  for item in row %}
+                                <td>{{ item }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
 
                     </table>
                 </div>

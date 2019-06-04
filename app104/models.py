@@ -2,8 +2,29 @@ from django.db import models
 from django.utils.timezone import now
 # Create your models here.
 
+class Patients(models.Model):
+    primary_key = models.CharField(db_column='ID', max_length=16)
+    zap_id = models.CharField(db_column='ZAPID', max_length=16)
+    client_num = models.CharField(db_column='ID_PAC', max_length=36, verbose_name='Айди пациента')
+    date_birth = models.DateTimeField(db_column='DR', verbose_name='Дата рождения')
+
+    class Meta:
+        db_table='"PACIENTS"'
+
+class Z_SLS(models.Model):
+    u"""
+    Таблица законченых случаев. Связана с таблицей случаев
+    """
+    primary_key = models.CharField(db_column='ID', max_length=16)
+    zap_id = models.ForeignKey(to=Patients,db_column='ZAPID', max_length=16, on_delete=models.CASCADE)
+    stat_or_amb = models.PositiveSmallIntegerField(db_column='USL_OK', verbose_name='Условия оказания мед. помощи')
+    result = models.PositiveSmallIntegerField(db_column='RSLT', verbose_name='результат обращения за мед. помощью')
+
+    class Meta:
+        db_table='"Z_SLS"'
+
 class SLS(models.Model):
-    caseZid = models.CharField(db_column='Z_SLID', max_length=16, blank=False, verbose_name='ID_случаев_Z')
+    caseZid = models.ForeignKey(to=Z_SLS, db_column='Z_SLID', max_length=16, blank=False, verbose_name='ID_случаев_Z', on_delete=models.CASCADE)
     caseId = models.CharField(db_column='SL_ID', max_length=36, verbose_name="ID_случаев")
     lpuId = models.CharField(db_column='LPU_1', max_length=8, verbose_name="номер ЛПУ")
     unit = models.CharField(db_column='PODR', max_length=16, verbose_name="подразделение")
@@ -51,12 +72,18 @@ class Nosologies(models.Model):
     class Meta:
         db_table='"NSLGS"'
 
-class Patients(models.Model):
-    client_id = models.CharField(db_column='ID_PAC', max_length=36, verbose_name='Айди пациента')
-    date_birth = models.DateTimeField(db_column='DR', verbose_name='Дата рождения')
+
+
+
+
+class ZAPS(models.Model):
+    u"""
+    Нужен для связи пациентов
+    """
+    primary_key = models.CharField(db_column='ID', max_length=16)
 
     class Meta:
-        db_table='"PACIENTS"'
+        db_table='"ZAPS"'
 
 class Lpu_names(models.Model):
     lpu_id = models.BigIntegerField(db_column='MCOD', blank=False, verbose_name='Код ЛПУ')

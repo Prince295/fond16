@@ -633,13 +633,13 @@ h1, h2, h3, h4, h5, h6, figure {
   float: left;
 }
 #gtco-footer a:hover {
-  color: #fff !important;
+  color: #00b3ee !important;
 }
 #gtco-footer .gtco-cta {
   margin-bottom: 30px;
 }
 #gtco-footer .gtco-cta h3 {
-  color: #fff;
+  color: #00b3ee;
   font-size: 30px;
   font-weight: 300;
 }
@@ -650,7 +650,7 @@ h1, h2, h3, h4, h5, h6, figure {
   color: #000 !important;
 }
 #gtco-footer .gtco-footer-paragraph h3 {
-  color: #fff;
+  color: #00b3ee;
   margin-bottom: 10px;
 }
 #gtco-footer .gtco-footer-link {
