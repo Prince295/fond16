@@ -188,7 +188,7 @@ def calculate_date(args):
             return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
                     '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
         else:
-            return ['0000-00-00', '3000-01-01']
+            return ['1000-01-01', '3000-01-01']
 
 def data_for_coord_death(request, *args):
     u"""
