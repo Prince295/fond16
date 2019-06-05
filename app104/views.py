@@ -7,10 +7,12 @@ from django.utils import timezone
 from dateutil import relativedelta
 
 
-global _data, _data_coord_death, _lpu_names
+global _data, _data_coord_death, _lpu_names, _data_coord_illness
 _data = []
 _data_coord_death = {}
 _lpu_names = {}
+_data_coord_illness = {
+                      }
 
 def load_data(request):
     if not _data:
@@ -263,14 +265,161 @@ def data_for_coord_death(request, *args):
             _data_coord_death[args[0]] = [row]
 
 
+def data_for_illness(request, *args):
+    u"""
+    Данные по заболеваемости за выбранный месяц,
+    также данные за прошлый месяц и данные за тот же месяц в прошлом году
+    :argument nosologies - таблица всех нозологий (заведена вручную)
+    :argument cases - данные из таблицы TFOMS_DATA_31.SLS, объединенной по внешнему ключу с TFOMS_DATA_31.Z_SLS
+    и TFOMS_DATA_31.PACIENTS -данные сгруппированы по СМО
+    :argument MO -
+    :argument stat_or_amb 1 - Стационар,
+                        2 - Дневной стационар
+                        3 - Поликлиника,
+                        4 - Скорая помощь
+    :argument
+    :param request:
+    :param args:
+    :param _data_coord_illness - результирующий кэш с данными, из которого будут подтягиваться цифры по отчетам:
+    _data_coord_illness = {
+ 'adult' : {'smo1' : {'mo1' : {'nos1' : {'amb'  : 12,
+                                         'stat' : 14,
+                                         'cmp'  : 10},
+                               'nos2' : {'amb'  : 3,
+                                         'stat' : 4,
+                                         'cmp'  : 2}},
+                      'mo2' : {'nos1' : {'amb'  : 12,
+                                         'stat' : 1,
+                                         'cmp'  : 10},
+                               'nos2' : {'amb'  : 3,
+                                         'stat' : 4,
+                                         'cmp'  : 2}},
+                      'mo3' : {'nos1' : {'amb'  : 2,
+                                         'stat' : 14,
+                                         'cmp'  : 20},
+                               'nos2' : {'amb'  : 3,
+                                         'stat' : 4,
+                                         'cmp'  : 2}}},
+            'smo2' : {'mo1' : {'nos1' : {'amb'  : 12,
+                                         'stat' : 4,
+                                         'cmp'  : 18},
+                               'nos2' : {'amb'  : 30,
+                                         'stat' : 45,
+                                         'cmp'  : 27}}}},
+ 'child' : {'smo1' : {'mo1' : {'nos1' : {'amb'  : 12,
+                                         'stat' : 14,
+                                         'cmp'  : 10},
+                               'nos2' : {'amb'  : 3,
+                                         'stat' : 4,
+                                         'cmp'  : 2}},
+                      'mo2' : {'nos1' : {'amb'  : 12,
+                                         'stat' : 1,
+                                         'cmp'  : 10},
+                               'nos2' : {'amb'  : 3,
+                                         'stat' : 4,
+                                         'cmp'  : 2}},
+                      'mo3' : {'nos1' : {'amb'  : 2,
+                                         'stat' : 14,
+                                         'cmp'  : 20},
+                               'nos2' : {'amb'  : 3,
+                                         'stat' : 4,
+                                         'cmp'  : 2}}},
+            'smo2' : {'mo1' : {'nos1' : {'amb'  : 12,
+                                         'stat' : 4,
+                                         'cmp'  : 18},
+                               'nos2' : {'amb'  : 30,
+                                         'stat' : 45,
+                                         'cmp'  : 27}}}},
+                      }
+    на боевом сервере данная структура будет подгятиваться по всем смо и всем мо. на данный момент структура динамически
+    заполняется при выборе фильтра отчетности для каждого из фильтров. В тестовой версии список СМО и МО сокращен.
+    Во всяком случае до ввода фильтра про МО и СМО и подтягивания данных в соответствии со значениями этого фильтра
+    :return: записи в глобальной переменной _data_for_illness
+    """
+
+
+    daterange = ['2019-03-01', '2019-03-31']
+    smo_list = [47036, 47043]
+    mo_list = [470074, 470006, 470003]
+
+    nosologies = Nosologies.objects.all()
+    cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
+                                                                 caseZid__zap_id__date_birth__range=calculate_date(args),
+                                                                 caseZid__isnull=False)
+
+    if args and not check_cache_coord_illness_age(args):
+        _data_coord_illness[args[0]] = {}
+        for smo in smo_list:
+            _data_coord_illness[args[0]][smo] = {}
+            if not check_cache_coord_illness_mo(args, mo_list, smo):
+                smo_filter = cases.filter(caseZid__zap_id__smo_id=smo)
+                for mo in mo_list:
+                    mo_filter = smo_filter.filter(lpuId__startswith=mo)
+                    amb = mo_filter.filter(caseZid__stat_or_amb=3)
+                    stat = mo_filter.filter(caseZid__stat_or_amb__in=[1, 2])
+                    stat_zam = mo_filter.filter(caseZid__stat_or_amb__isnull=True)
+                    skor_mp = mo_filter.filter(caseZid__stat_or_amb=4).exclude(unit__startswith=SLS.lpuId)
+                    sum_amb = 0
+                    sum_stat = 0
+                    sum_stat_zam = 0
+                    sum_skor_mp = 0
+                    for number, _obj in enumerate(nosologies):
+                        row = [0 for j in range(7)]
+                        row[0] = _obj.number
+                        row[1] = _obj.name
+                        row[2] = (_obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
+                        count_amb = 0
+                        for sl in amb:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_amb += 1
+                        count_stat = 0
+                        for sl in stat:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_stat += 1
+                        count_stat_zam = 0
+                        for sl in stat_zam:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_stat_zam += 1
+                        count_skor_mp = 0
+                        for sl in skor_mp:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_skor_mp += 1
+                        row[3] = count_amb
+                        row[4] = count_stat
+                        row[5] = count_stat_zam
+                        row[6] = count_skor_mp
+                        if _data_coord_illness[args[0]][smo].get(mo, None):
+                            _data_coord_illness[args[0]][smo][mo].append(row)
+                        else:
+                            _data_coord_illness[args[0]][smo][mo] = [row]
+                        sum_amb += count_amb
+                        sum_stat += count_stat
+                        sum_stat_zam += count_stat_zam
+                        sum_skor_mp += count_skor_mp
+                    # последняя строка
+                    row = [0 for j in range(7)]
+                    row[0] = '.....'
+                    row[1] = 'Итого:'
+                    row[2] = '.....'
+                    row[3] = sum_amb
+                    row[4] = sum_stat
+                    row[5] = sum_stat_zam
+                    row[6] = sum_skor_mp
+                    if _data_coord_illness[args[0]][smo].get(mo, None):
+                        _data_coord_illness[args[0]][smo][mo].append(row)
+                    else:
+                        _data_coord_illness[args[0]][smo][mo] = [row]
+
+
 
 
 def check_cache_coord_death(args, count):
     u"""
     проверяет наличие в кэше необходимых для построения таблиц данных,
     чтобы не запрашивать из базы
-    :param args:
-    :return: bool
+    :param args: аргумент get-запроса, показывающий хвост ссылки :type string:
+    :param count: количество строк :type int
+    :return: :type bool
     """
 
     if args and (len(args) > 0) and _data_coord_death.get(args[0], None) and count == len(_data_coord_death[args[0]]):
@@ -278,6 +427,66 @@ def check_cache_coord_death(args, count):
     else:
         return False
 
+def check_cache_coord_illness_age(args):
+    u"""
+    Проверяет наличие в кэше необходимых данных для построения таблиц,
+    чтобы не тянуть из базы ( на боевом сервере из результирующей таблицы)
+    :param args: аргумент get-запроса, показывающий хвост ссылки :type string
+
+    :param count: количество столбцов :type int
+    :return: :type bool
+    """
+    if args and (len(args) > 0) and _data_coord_illness.get(args[0], None):
+        return True
+    else:
+        return False
+
+def check_cache_coord_illness_smo(args, smo_list):
+    u"""
+        Проверяет наличие в кэше необходимых данных для построения таблиц,
+        чтобы не тянуть из базы ( на боевом сервере из результирующей таблицы)
+        :param args: аргумент get-запроса, показывающий хвост ссылки :type string
+        :param smo_list: список страховых компаний :type list
+        :param count: количество столбцов :type int
+        :return: :type bool
+        """
+    for smo in smo_list:
+        if not _data_coord_illness[args[0]].get(smo, None):
+            return False
+    return True
+
+def check_cache_coord_illness_mo(args, mo_list, smo):
+    u"""
+        Проверяет наличие в кэше необходимых данных для построения таблиц,
+        чтобы не тянуть из базы ( на боевом сервере из результирующей таблицы)
+        :param args: аргумент get-запроса, показывающий хвост ссылки :type String
+        :param mo_list: список больниц :type list
+        :param smo: id страховой компании :type string
+        :param count: количество столбцов :type int
+        :return: :type bool
+        """
+    for mo in mo_list:
+        if not _data_coord_illness[args[0]][smo].get(mo, None):
+            return False
+    return True
+
+
+def coord_illness_urls(request, *args):
+    u"""
+        В зависимости от полученного запроса генерирует таблицу
+        :param request:
+        :return:
+        """
+    data_for_illness(request, *args)
+    len_smo = {}
+    if args and len(args) > 0:
+        for smo_name, smo_val in _data_coord_illness[args[0]].items():
+            for mo_name, mo_val in smo_val.items():
+                len_mo = len(mo_val) + 1
+            len_smo = len(_data_coord_illness[args[0]][smo_name].keys()) * len_mo
+        return render(request, 'coordination_illness.html', {'data' : _data_coord_illness[args[0]],
+                                                             'smo_list_len' : len_smo,
+                                                             'mo_list_len' : len_mo})
 
 def coord_death_urls(request, *args):
     u"""

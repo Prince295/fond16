@@ -32,5 +32,6 @@ urlpatterns = [
     url(r'^documents/$', documents_base, name='documents'),
     url(r'^documents/all/$', documents_all, name='docs_all'),
     url(r'^documents/new/$', documents_new, name='docs_new'),
-    url(r'^coordination_death/(\w+)/$', coord_death_urls, name='coord_death_tables')
+    url(r'^coordination_death/(\w+)/$', coord_death_urls, name='coord_death_tables'),
+    url(r'^coordination_illness/(\w+)/$', coord_illness_urls, name='coord_illness_tables')
 ]

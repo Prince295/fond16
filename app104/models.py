@@ -6,6 +6,7 @@ class Patients(models.Model):
     primary_key = models.CharField(db_column='ID', max_length=16)
     zap_id = models.CharField(db_column='ZAPID', max_length=16)
     client_num = models.CharField(db_column='ID_PAC', max_length=36, verbose_name='Айди пациента')
+    smo_id = models.CharField(db_column='SMO', max_length=255, verbose_name='Айди страховой медицинской организации')
     date_birth = models.DateTimeField(db_column='DR', verbose_name='Дата рождения')
 
     class Meta:
