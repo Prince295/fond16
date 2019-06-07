@@ -45,8 +45,7 @@ def load_data(request):
             lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange, lpuId__startswith=v).annotate(ds1count=Count(SLS.mkbExtra)))
             lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange, lpuId__startswith=v, caseZid__stat_or_amb__in=[1,2]).annotate(
                 ds1count=Count(SLS.mkbExtra)))
-            lpu_list.append(
-                SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange).filter(lpuId__startswith=v, caseZid__stat_or_amb__in=3).annotate(
+            lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange).filter(lpuId__startswith=v, caseZid__stat_or_amb=3).annotate(
                     ds1count=Count(SLS.mkbExtra)))
         row = [0 for j in range(len(lpu_list) + 5)]
         for i, n in enumerate(nosologies):

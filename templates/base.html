@@ -58,7 +58,7 @@
 					<div class="col-xs-10 text-right menu-1">
 						<ul>
 							<li class="has-dropdown">
-                                <a href="/coordination/">Координационный совет</a>
+                                <a href="/coord/illness/">Координационный совет</a>
                                 <ul class="dropdown">
                                     <li><a href="/coord/illness/">Заболеваемость</a></li>
                                     <li><a href="/coord/death/">Смертность</a></li>
@@ -73,7 +73,7 @@
 								</ul>
 							</li>
 							<li class="has-dropdown">
-								<a href="/documents/">Поручения</a>
+								<a href="/documents/all/">Поручения</a>
 								<ul class="dropdown">
 									<li><a href="/documents/all/">Все поручения</a></li>
 									<li><a href="/documents/new/">+Создать новое</a></li>
@@ -95,15 +95,15 @@
 						<div class="display-t">
 							<div class="display-tc">
 								<div class="row">
-									<div class="col-md-5 text-center header-img">
+									<div class="col-md-4 text-left header-img">
 										<img src="/static/images/cube.png" alt="Free HTML5 Website Template by GetTemplates.co">
 									</div>
-									<div class="col-md-7 copy">
+									<div class="col-md-8 copy">
 										<h1>Виста.Сервис</h1>
 										<p>Программный комплекс по системе персонифицированного учета объемов оказанной медицинской помощи и оценки её качества в системе обязательного медицинского страхования Ленинградской области</p>
-										<p><a id='load_form' href="/coordination/" class="btn btn-white" onclick="showDoc();">Координационный совет</a>
-                                        <a href="/load/" class="btn btn-white" onclick="showDoc();">Выгрузка</a>
-                                        <a href="/mo_views/" class="btn btn-white" onclick="showDoc();">Показать</a></p>
+										<p><a id='load_form' href="/coord/illness/" class="btn btn-white" onclick="showDoc();">Координационный совет</a>
+                                        <a href="/mo_views/" class="btn btn-white" onclick="showDoc();">Выгрузка</a>
+                                        <a href="/documents/all/" class="btn btn-white" onclick="showDoc();">Поручения</a></p>
                                         {% block table %}
                                         {% endblock table %}
 									</div>
