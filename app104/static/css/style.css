@@ -36,6 +36,18 @@ table:target {
   text-shadow: #00b3ee;
 }
 
+.vertical-tr {
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+  font-weight: lighter;
+  font-stretch: condensed;
+  font-size: 1em;
+  text-align-all: justify;
+}
+
 caption {
   font-family: 'icomoon';
   font-weight: bold;

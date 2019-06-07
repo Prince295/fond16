@@ -9,9 +9,15 @@
 
                 </div>
     <div class="gtco-loader"></div>
+                <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px;">
+                    <h3 style="font-family: 'Calibri Light'">Выгрузка данных за март 2019 года.</h3><br>
+                    <h3 style="font-family: 'Calibri Light'">Сравнение с данными за апрель 2019 года.</h3>
+                </div>
+
+
 
                 <div class="row">
-                    <table id="table_illness" class="table-striped table-death"; style="margin-left: 30px; margin-right: 30px; margin-bottom: 100px; font-family: 'Calibri Light'">
+                    <table id="table_illness" class="table-striped table-death"; style="margin-left: 30px; margin-right: 30px; margin-bottom: 30px; font-family: 'Calibri Light'">
 
                         <tr>
                             <th rowspan="2" class="first table-death-head">Страховая медицинская организация</th>
@@ -31,11 +37,11 @@
                         </tr>
                         {% for smo_name, smo in data.items %}
                             <tr>
-                                <th rowspan="{{ smo_list_len }}">{{ smo_name }}</th>
+                                <th class="vertical-tr"; rowspan="{{ smo_list_len }}">{{ names_list|get_item:smo_name }}</th>
 
                             {% for mo_name, mo in smo.items %}
 
-                                <th rowspan="{{ mo_list_len }}">{{ mo_name }}</th>
+                                <th class="vertical-tr"; rowspan="{{ mo_list_len }}">{{ names_list|get_item:mo_name }}</th>
 
                                 {% for row in mo %}
                                     <tr>
@@ -50,6 +56,9 @@
                         {% endfor %}
 
                     </table>
+                </div>
+                <div class="col-md-8 col-md-offset-4 text-right" style="margin-top: -20px">
+                    <a style="text-align-all: right; margin-top: 50px">Примечание: запись new означает, что случай заболевания не наблюдался в прошлом месяце</a>
                 </div>
 
 {% endblock main %}

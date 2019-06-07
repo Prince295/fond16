@@ -1,18 +1,26 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest,HttpResponseRedirect
 from django.conf import settings
-from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS
+from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS, Smo_names
 from django.db.models import Count,Q
 from django.utils import timezone
 from dateutil import relativedelta
 
 
-global _data, _data_coord_death, _lpu_names, _data_coord_illness
+global _data, _data_coord_death, _lpu_names, _data_coord_illness, _data_coord_illness_prev_year, data_for_illness_prev_month, _names
 _data = []
 _data_coord_death = {}
 _lpu_names = {}
-_data_coord_illness = {
-                      }
+_data_coord_illness = {}
+_data_coord_illness_prev_year = {
+
+} #нужен для построения сравнительного отчета\
+_data_coord_illness_result = {}
+_data_coord_illness_prev_month = {
+
+} #нужен для построения сравнительного отчета ( дальше будет структура, сохраняющая более цельно)
+
+_names = {}  #присваивает названия лпшушкам и смошкам в отчете
 
 def load_data(request):
     if not _data:
@@ -265,7 +273,7 @@ def data_for_coord_death(request, *args):
             _data_coord_death[args[0]] = [row]
 
 
-def data_for_illness(request, *args):
+def data_for_illness(request, prev_month, prev_year,  *args):
     u"""
     Данные по заболеваемости за выбранный месяц,
     также данные за прошлый месяц и данные за тот же месяц в прошлом году
@@ -337,21 +345,39 @@ def data_for_illness(request, *args):
     :return: записи в глобальной переменной _data_for_illness
     """
 
-
     daterange = ['2019-03-01', '2019-03-31']
-    smo_list = [47036, 47043]
-    mo_list = [470074, 470006, 470003]
+    if prev_month:
+        d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
+        d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
+        daterange = ['{year}-{month}-{day}'.format(year=d1.year, month=d1.month, day=d1.day),
+                     '{year}-{month}-{day}'.format(year=d2.year, month=d2.month, day=d2.day)]
+    if prev_year:
+        d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(years=-1)
+        d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(years=-1)
+        daterange = ['{year}-{month}-{day}'.format(year=d1.year, month=d1.month, day=d1.day),
+                     '{year}-{month}-{day}'.format(year=d2.year, month=d2.month, day=d2.day)]
 
+
+    smo_list = [47042, 47045]
+    mo_list = [470014, 470001, 470003]
+    for smo in smo_list:
+        _names[smo] = Smo_names.objects.using('dictadmin').filter(smo_id=smo).values_list('short_name',flat=True)
+        if len(_names[smo] ) > 0 :
+            _names[smo] = _names[smo][0]
+        else:
+            _names[smo] = u'Неизвестно'
+    for mo in mo_list:
+        _names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=mo).values_list('name_short',flat=True)[0]
     nosologies = Nosologies.objects.all()
     cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
                                                                  caseZid__zap_id__date_birth__range=calculate_date(args),
                                                                  caseZid__isnull=False)
 
-    if args and not check_cache_coord_illness_age(args):
+    if args and not check_cache_coord_illness_age(_data_coord_illness, args):
         _data_coord_illness[args[0]] = {}
         for smo in smo_list:
             _data_coord_illness[args[0]][smo] = {}
-            if not check_cache_coord_illness_mo(args, mo_list, smo):
+            if not check_cache_coord_illness_mo(_data_coord_illness,args, mo_list, smo):
                 smo_filter = cases.filter(caseZid__zap_id__smo_id=smo)
                 for mo in mo_list:
                     mo_filter = smo_filter.filter(lpuId__startswith=mo)
@@ -411,6 +437,99 @@ def data_for_illness(request, *args):
                         _data_coord_illness[args[0]][smo][mo] = [row]
 
 
+def data_for_illness_prev(request, prev_month, prev_year, *args):
+    u"""
+    TODO: Так делать нехорошо. Поменяю структуру
+    Дубль функции для извлечения данных по заболеваниям ( нужен, чтобы не запутаться в глобальных словарях)
+    :return: записи в глобальной переменной _data_for_illness_prev_month or _data_for_illness_prev_year
+    """
+
+    daterange = ['2019-03-01', '2019-03-31']
+    if prev_month:
+        d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
+        d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
+        daterange = ['{year}-{month}-{day}'.format(year=d1.year, month=d1.month, day=d1.day),
+                     '{year}-{month}-{day}'.format(year=d2.year, month=d2.month, day=d2.day)]
+    if prev_year:
+        d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(years=-1)
+        d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(years=-1)
+        daterange = ['{year}-{month}-{day}'.format(year=d1.year, month=d1.month, day=d1.day),
+                     '{year}-{month}-{day}'.format(year=d2.year, month=d2.month, day=d2.day)]
+
+    smo_list = [47042, 47045]
+    mo_list = [470014, 470001, 470003]
+
+    nosologies = Nosologies.objects.all()
+    cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
+                                                                 caseZid__zap_id__date_birth__range=calculate_date(
+                                                                     args),
+                                                                 caseZid__isnull=False)
+
+    if args and not check_cache_coord_illness_age(_data_coord_illness_prev_year, args):
+        _data_coord_illness_prev_year[args[0]] = {}
+        for smo in smo_list:
+            _data_coord_illness_prev_year[args[0]][smo] = {}
+            if not check_cache_coord_illness_mo(_data_coord_illness_prev_year, args, mo_list, smo):
+                smo_filter = cases.filter(caseZid__zap_id__smo_id=smo)
+                for mo in mo_list:
+                    mo_filter = smo_filter.filter(lpuId__startswith=mo)
+                    amb = mo_filter.filter(caseZid__stat_or_amb=3)
+                    stat = mo_filter.filter(caseZid__stat_or_amb__in=[1, 2])
+                    stat_zam = mo_filter.filter(caseZid__stat_or_amb__isnull=True)
+                    skor_mp = mo_filter.filter(caseZid__stat_or_amb=4).exclude(unit__startswith=SLS.lpuId)
+                    sum_amb = 0
+                    sum_stat = 0
+                    sum_stat_zam = 0
+                    sum_skor_mp = 0
+                    for number, _obj in enumerate(nosologies):
+                        row = [0 for j in range(7)]
+                        row[0] = _obj.number
+                        row[1] = _obj.name
+                        row[2] = (
+                                    _obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
+                        count_amb = 0
+                        for sl in amb:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_amb += 1
+                        count_stat = 0
+                        for sl in stat:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_stat += 1
+                        count_stat_zam = 0
+                        for sl in stat_zam:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_stat_zam += 1
+                        count_skor_mp = 0
+                        for sl in skor_mp:
+                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                                count_skor_mp += 1
+                        row[3] = count_amb
+                        row[4] = count_stat
+                        row[5] = count_stat_zam
+                        row[6] = count_skor_mp
+                        if _data_coord_illness_prev_year[args[0]][smo].get(mo, None):
+                            _data_coord_illness_prev_year[args[0]][smo][mo].append(row)
+                        else:
+                            _data_coord_illness_prev_year[args[0]][smo][mo] = [row]
+                        sum_amb += count_amb
+                        sum_stat += count_stat
+                        sum_stat_zam += count_stat_zam
+                        sum_skor_mp += count_skor_mp
+                    # последняя строка
+                    row = [0 for j in range(7)]
+                    row[0] = '.....'
+                    row[1] = 'Итого:'
+                    row[2] = '.....'
+                    row[3] = sum_amb
+                    row[4] = sum_stat
+                    row[5] = sum_stat_zam
+                    row[6] = sum_skor_mp
+                    if _data_coord_illness_prev_year[args[0]][smo].get(mo, None):
+                        _data_coord_illness_prev_year[args[0]][smo][mo].append(row)
+                    else:
+                        _data_coord_illness_prev_year[args[0]][smo][mo] = [row]
+
+
 
 
 def check_cache_coord_death(args, count):
@@ -427,7 +546,7 @@ def check_cache_coord_death(args, count):
     else:
         return False
 
-def check_cache_coord_illness_age(args):
+def check_cache_coord_illness_age(_dict, args):
     u"""
     Проверяет наличие в кэше необходимых данных для построения таблиц,
     чтобы не тянуть из базы ( на боевом сервере из результирующей таблицы)
@@ -436,12 +555,12 @@ def check_cache_coord_illness_age(args):
     :param count: количество столбцов :type int
     :return: :type bool
     """
-    if args and (len(args) > 0) and _data_coord_illness.get(args[0], None):
+    if args and (len(args) > 0) and _dict.get(args[0], None):
         return True
     else:
         return False
 
-def check_cache_coord_illness_smo(args, smo_list):
+def check_cache_coord_illness_smo(_dict, args, smo_list):
     u"""
         Проверяет наличие в кэше необходимых данных для построения таблиц,
         чтобы не тянуть из базы ( на боевом сервере из результирующей таблицы)
@@ -451,11 +570,11 @@ def check_cache_coord_illness_smo(args, smo_list):
         :return: :type bool
         """
     for smo in smo_list:
-        if not _data_coord_illness[args[0]].get(smo, None):
+        if not _dict[args[0]].get(smo, None):
             return False
     return True
 
-def check_cache_coord_illness_mo(args, mo_list, smo):
+def check_cache_coord_illness_mo(_dict, args, mo_list, smo):
     u"""
         Проверяет наличие в кэше необходимых данных для построения таблиц,
         чтобы не тянуть из базы ( на боевом сервере из результирующей таблицы)
@@ -466,9 +585,13 @@ def check_cache_coord_illness_mo(args, mo_list, smo):
         :return: :type bool
         """
     for mo in mo_list:
-        if not _data_coord_illness[args[0]][smo].get(mo, None):
+        if not _dict[args[0]][smo].get(mo, None):
             return False
     return True
+
+
+
+
 
 
 def coord_illness_urls(request, *args):
@@ -477,16 +600,73 @@ def coord_illness_urls(request, *args):
         :param request:
         :return:
         """
-    data_for_illness(request, *args)
+    data_for_illness(request,None, None,  args[0])
+    data_for_illness_prev(request, True, None, args[0])
     len_smo = {}
+    calculated_data = return_data_illness(request, args)
     if args and len(args) > 0:
         for smo_name, smo_val in _data_coord_illness[args[0]].items():
             for mo_name, mo_val in smo_val.items():
                 len_mo = len(mo_val) + 1
             len_smo = len(_data_coord_illness[args[0]][smo_name].keys()) * len_mo
-        return render(request, 'coordination_illness.html', {'data' : _data_coord_illness[args[0]],
+        return render(request, 'coordination_illness.html', {'data' : calculated_data[args[0]],
                                                              'smo_list_len' : len_smo,
-                                                             'mo_list_len' : len_mo})
+                                                             'mo_list_len' : len_mo,
+                                                             'names_list' : _names})
+
+def return_data_illness(request, args):
+    u"""
+    Функция берет 2 словаря из глобальных данных,
+    сравнивает значения в них - пересчитывает их в отдельный словарь, который и уходит в отчет
+    :arg _data_coord_illness - данные по заболеваниям за отчетный месяц
+    :arg _data_coord_illness_prev_year - данные по заболеваниям за отчетный месяц в предыдущем календарном году
+
+    :return: data_for_print :type dict
+    """
+
+    data_for_print = {args[0]: {}}
+    data_for_print[args[0]] = copy_data(data_for_print[args[0]], _data_coord_illness[args[0]])
+    for smo, mo_dict in _data_coord_illness[args[0]].items():
+        for mo, rows in mo_dict.items():
+            for j, row in enumerate(rows):
+                for i in range(3):
+                    data_for_print[args[0]][smo][mo][j][i] = _data_coord_illness_prev_year[args[0]][smo][mo][j][i]
+                for i in range(3,7,1):
+                    data_for_print[args[0]][smo][mo][j][i] = get_column(_data_coord_illness[args[0]][smo][mo][j][i], _data_coord_illness_prev_year[args[0]][smo][mo][j][i])
+    return data_for_print
+
+def copy_data(result, copied):
+    u"""
+    затычка, чтобы избежать потери данных
+    :param result: структура, которую меняем,
+    :param copied: структура, которую необходимо разбить на части
+    :return: dict
+    """
+    for k, v in copied.items():
+        result[k] = {}
+        for kk, vv in v.items():
+            result[k][kk] = []
+            for num, it in enumerate(vv):
+                result[k][kk].append([])
+                for i in it:
+                    result[k][kk][num].append(0)
+    return result
+
+
+def get_column(new, old):
+    u"""Возвращает строковое отображение колонки"""
+    new = int(new)
+    old = int(old)
+    if old != 0:
+        result = 100 * (new - old)/old
+        result = round(result, 2)
+    else:
+        if new != 0:
+            result = 'new'
+        else:
+            result = 0.00
+    return u'{} %'.format(str(result))
+
 
 def coord_death_urls(request, *args):
     u"""

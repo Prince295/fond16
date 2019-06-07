@@ -86,6 +86,20 @@ class ZAPS(models.Model):
     class Meta:
         db_table='"ZAPS"'
 
+class Smo_names(models.Model):
+    u"""Из схемы DICTADMIN таблица F002_LO - справочник
+    информации о страховых медицинских организациях Лен. Области"""
+
+    smo_id = models.BigIntegerField(db_column='SMOCOD', verbose_name='Реестровый номер СМО')
+    ogrn = models.CharField(db_column='OGRN', max_length=15)
+    phone = models.CharField(db_column='PHONE', max_length=40)
+    filial_address = models.CharField(db_column='ADDR_F', max_length=254, verbose_name='Адрес филиала')
+    full_name = models.CharField(db_column='NAM_SMOP', max_length=254, verbose_name='Имя юр. лица')
+    short_name = models.CharField(db_column='NAM_SMOK', max_length=250, verbose_name='Название')
+
+    class Meta:
+        db_table = 'F002_LO'
+
 class Lpu_names(models.Model):
     lpu_id = models.BigIntegerField(db_column='MCOD', blank=False, verbose_name='Код ЛПУ')
     name_full = models.CharField(db_column='NAM_MOP', max_length=254, verbose_name='Название')
