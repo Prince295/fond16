@@ -1,10 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, resolve_url
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest,HttpResponseRedirect
 from django.conf import settings
 from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS, Smo_names
 from django.db.models import Count,Q
 from django.utils import timezone
 from dateutil import relativedelta
+from django.contrib.auth import authenticate, login, REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import login_required
+
+
 
 
 global _data, _data_coord_death, _lpu_names, _data_coord_illness, _data_coord_illness_prev_year, data_for_illness_prev_month, _names
@@ -17,6 +21,37 @@ _data_coord_illness_prev_year = {} #нужен для построения ср�
 _data_coord_illness_result = {}
 _data_coord_illness_prev_month = {} #нужен для построения сравнительного отчета ( дальше будет структура, сохраняющая более цельно)
 _names = {}  #присваивает названия лпшушкам и смошкам в отчете
+
+def authentificate_func(request):
+    u"""
+    Аутентифицирует и авторизует пользователя
+    :param request: пост запрос с именем пользователя и паролем
+    :return: HttpResponse (успех или ошибка)
+    """
+
+
+    redirect_field_name = REDIRECT_FIELD_NAME
+    redirect_to = request.POST.get(
+            redirect_field_name,
+            request.GET.get(redirect_field_name, '')
+        )
+    redirect_to = redirect_to or resolve_url(settings.LOGIN_REDIRECT_URL)
+
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect(redirect_to=redirect_to)
+            else:
+                return HttpResponseBadRequest()
+        else:
+            return HttpResponseBadRequest()
+
+    return render(request, 'base.html')
 
 def load_data(request):
     if not _data:
@@ -108,9 +143,11 @@ def mo_views_ctrl_tbl(request):
 def documents_base(request):
     return render(request, 'documents_base.html')
 
+@login_required(login_url='/fond16/login/')
 def documents_all(request):
     return render(request, 'documents_all.html')
 
+@login_required(login_url='/fond16/login/')
 def documents_new(request):
     return render(request, 'documents_new.html')
 
@@ -143,6 +180,9 @@ def coord_death(request):
 
 def onload(request):
     return render(request, 'index.html')
+
+def success_auth(request):
+    return render(request, 'base.html')
 
 def get_data(request):
     u"""

@@ -9,20 +9,22 @@
 
     <div class="row" >
         <div class="col-md-8 text-center">
-            <form action="#" class="registry-form">
+            <form action="/fond16/login/" class="registry-form" method="post" id="login_form">
+                {% csrf_token %}
                 <div class="form-group">
-                    <label for="name">Логин</label>
-                    <input type="text" class="form-control" id="number">
+                    <label for="username">Логин</label>
+                    <input type="text" class="form-control" name="username" form="login_form" formmethod="post">
                 </div>
                 <div class="form-group">
-                    <label for="name">Пароль</label>
-                    <input type="text" class="form-control" id="name">
+                    <label for="password">Пароль</label>
+                    <input type="text" class="form-control" name="password" form="login_form" formmethod="post">
                 </div>
 
                 <div class="form-group">
                     <input type="submit" class="btn btn btn-special" value="Войти">
                     <input type="button" class="btn btn btn-special cancel-auth" value="Отмена">
                 </div>
+
             </form>
         </div>
     </div>

@@ -20,6 +20,8 @@ from app104.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    url(r'^fond16/login/$', authentificate_func),
+    url(r'^fond16/profile/$', success_auth),
     url(r'^load_cache/$', load_data, name='load_data'),
     url(r'^$', base, name='base'),
     url(r'^coord/$', coordination, name='coordination'),
