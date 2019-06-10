@@ -14,3 +14,13 @@ function showDoc() {
     doc.hidden = false;
 
 }
+
+$(document).ready(function(){
+$(".auth").click(function () {
+$("#auth_form").addClass("form--active");
+
+});
+$(".cancel-auth").click(function () {
+$("#auth_form").removeClass("form--active");
+})
+});

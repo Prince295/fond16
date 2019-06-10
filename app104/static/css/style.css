@@ -48,6 +48,33 @@ table:target {
   text-align-all: justify;
 }
 
+.form--inactive {
+    display: none;
+}
+
+.form--active {
+display: block;
+}
+
+.registry-form {
+    margin-left: 45%;
+    margin-top: 25%;
+    padding: 40px;
+    line-height: 3;
+    font-size: 0.8em;
+    font-family: "Calibri Light";
+    font-stretch: semi-expanded;
+    font-weight: lighter;
+    background-color: #fff;
+    border: 3px #CCCCCC solid; /* стили рамки */
+     -moz-border-radius: 10px; /* закругление для старых Mozilla Firefox */
+     -webkit-border-radius: 10px; /* закругление для старых Chrome и Safari */
+     -khtml-border-radius:10px; /* закругл. для браузера Konquerer системы Linux */
+     border-radius: 10px; /* закругление углов для всех, кто понимает */
+    opacity: 1;
+
+}
+
 caption {
   font-family: 'icomoon';
   font-weight: bold;

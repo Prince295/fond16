@@ -43,7 +43,7 @@
 
 	</head>
 	<body>
-
+    {% include 'auth.html' %}
 	<div class="gtco-loader"></div>
 
 	<div id="page">
@@ -80,6 +80,9 @@
 
 								</ul>
 							</li>
+                            <li>
+                                <a href="#" class="auth">Вход</a>
+                            </li>
 
 						</ul>
 					</div>
@@ -116,6 +119,8 @@
 			</div>
 		</header>
 		<!-- END #gtco-header -->
+
+
 
         {% block main %}
         {% endblock main %}
@@ -175,4 +180,5 @@
 
 	</body>
 </html>
+
 

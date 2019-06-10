@@ -8,18 +8,14 @@ from dateutil import relativedelta
 
 
 global _data, _data_coord_death, _lpu_names, _data_coord_illness, _data_coord_illness_prev_year, data_for_illness_prev_month, _names
+
 _data = []
 _data_coord_death = {}
 _lpu_names = {}
 _data_coord_illness = {}
-_data_coord_illness_prev_year = {
-
-} #нужен для построения сравнительного отчета\
+_data_coord_illness_prev_year = {} #нужен для построения сравнительного отчета\
 _data_coord_illness_result = {}
-_data_coord_illness_prev_month = {
-
-} #нужен для построения сравнительного отчета ( дальше будет структура, сохраняющая более цельно)
-
+_data_coord_illness_prev_month = {} #нужен для построения сравнительного отчета ( дальше будет структура, сохраняющая более цельно)
 _names = {}  #присваивает названия лпшушкам и смошкам в отчете
 
 def load_data(request):
