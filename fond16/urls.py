@@ -17,11 +17,13 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url
 from app104.views import *
+from django.contrib.auth import logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^fond16/login/$', authentificate_func),
     url(r'^fond16/profile/$', success_auth),
+    url(r'^fond16/logout/$', logout_func),
     url(r'^load_cache/$', load_data, name='load_data'),
     url(r'^$', base, name='base'),
     url(r'^coord/$', coordination, name='coordination'),

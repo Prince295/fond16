@@ -56,6 +56,16 @@ table:target {
 display: block;
 }
 
+.hideelembtn {
+  display: block;
+
+}
+
+.active-tr {
+  display: block;
+}
+
+
 .registry-form {
     margin-left: 45%;
     margin-top: 25%;

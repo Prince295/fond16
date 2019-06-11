@@ -80,9 +80,18 @@
 
 								</ul>
 							</li>
+                            {% if user|check_user:user.username  %}
                             <li>
                                 <a href="#" class="auth">Вход</a>
                             </li>
+                            {% else %}
+                            <li>
+                                <a href="#">Добро пожаловать, {{ user.username }}</a>
+                            </li>
+                            <li>
+                                <a href="#" class="logout">Выйти</a>
+                            </li>
+                            {% endif %}
 
 						</ul>
 					</div>

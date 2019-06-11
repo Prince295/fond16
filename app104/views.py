@@ -5,7 +5,7 @@ from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS, Smo_names
 from django.db.models import Count,Q
 from django.utils import timezone
 from dateutil import relativedelta
-from django.contrib.auth import authenticate, login, REDIRECT_FIELD_NAME
+from django.contrib.auth import authenticate, login, logout, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
 
 
@@ -51,7 +51,14 @@ def authentificate_func(request):
         else:
             return HttpResponseBadRequest()
 
+        return render(request, 'base.html', {'user' : user})
+    else:
+        return render(request, 'base.html')
+
+def logout_func(request):
+    logout(request)
     return render(request, 'base.html')
+
 
 def load_data(request):
     if not _data:
