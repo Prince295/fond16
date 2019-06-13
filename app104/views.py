@@ -51,13 +51,13 @@ def authentificate_func(request):
         else:
             return HttpResponseBadRequest()
 
-        return render(request, 'base.html', {'user' : user})
+        return render(request, 'coordination_illness.html', {'user' : user})
     else:
-        return render(request, 'base.html')
+        return render(request, 'coordination_illness.html')
 
 def logout_func(request):
     logout(request)
-    return render(request, 'base.html')
+    return render(request, 'coordination_illness.html')
 
 
 def load_data(request):
@@ -101,10 +101,10 @@ def load_data(request):
                         else:
                             _data[i][len(row) - 1] += lpu.ds1count
 
-    return render(request, 'base.html')
+    return render(request, 'coordination_illness.html')
 
 def base(request):
-    return render(request, 'base.html')
+    return render(request, 'coordination_illness.html')
 
 
 def index(request):
@@ -189,7 +189,7 @@ def onload(request):
     return render(request, 'index.html')
 
 def success_auth(request):
-    return render(request, 'base.html')
+    return render(request, 'coordination_illness.html')
 
 def get_data(request):
     u"""
