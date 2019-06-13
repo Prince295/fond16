@@ -63,7 +63,7 @@ def logout_func(request):
 def load_data(request):
     if not _data:
         daterange = ["2019-03-01", "2019-03-31"]
-        nosologies = Nosologies.objects.all()
+        nosologies = Nosologies.objects.all().order_by('id')
         lpu_list = []
         lpus = {1: 47007406,
                 2: 470067,
@@ -252,7 +252,7 @@ def data_for_coord_death(request, *args):
     """
     death_list = [105, 106, 205, 206, 313, 405, 406, 411]
     daterange = ['2019-03-01', '2019-03-31']
-    nosologies = Nosologies.objects.all()
+    nosologies = Nosologies.objects.all().order_by('id')
     cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
                                                                  caseZid__result__in=death_list,
                                                                  caseZid__zap_id__date_birth__range=calculate_date(args),
@@ -410,7 +410,7 @@ def data_for_illness(request, prev_month, prev_year,  *args):
             _names[smo] = u'Неизвестно'
     for mo in mo_list:
         _names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=mo).values_list('name_short',flat=True)[0]
-    nosologies = Nosologies.objects.all()
+    nosologies = Nosologies.objects.all().order_by('id')
     cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
                                                                  caseZid__zap_id__date_birth__range=calculate_date(args),
                                                                  caseZid__isnull=False)
@@ -501,7 +501,7 @@ def data_for_illness_prev(request, prev_month, prev_year, *args):
     smo_list = [47042, 47045]
     mo_list = [470014, 470001, 470003]
 
-    nosologies = Nosologies.objects.all()
+    nosologies = Nosologies.objects.all().order_by('id')
     cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
                                                                  caseZid__zap_id__date_birth__range=calculate_date(
                                                                      args),

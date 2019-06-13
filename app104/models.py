@@ -65,6 +65,7 @@ class SLS(models.Model):
         db_table='"SLS"'
 
 class Nosologies(models.Model):
+    id = models.BigIntegerField(db_column='ID', primary_key=True, verbose_name='Идентификатор')
     number = models.DecimalField(db_column='NUMBER', max_digits=2, decimal_places=2, verbose_name='Номер')
     name = models.CharField(db_column='NAME', max_length=150, blank=False, verbose_name='Заболевание')
     mkbFirst = models.CharField(db_column='MKBFIRST', max_length=6, verbose_name='с_МКБ')
