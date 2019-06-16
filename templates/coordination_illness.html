@@ -17,38 +17,45 @@
 
 
                 <div class="row">
-                    <table id="table_illness" class="table-striped table-death"; style="margin-left: 30px; margin-right: 30px; margin-bottom: 30px; font-family: 'Calibri Light'">
+                    <table id="table_illness" class="table-striped table-death"; style="display: table; margin-left: 30px; margin-right: 30px; margin-bottom: 30px; font-family: 'Calibri Light'">
 
-                        <tr>
-                            <th rowspan="2" class="first table-death-head" id="smo_header">Страховая медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th rowspan="2" class="first table-death-head" id="mo_header">Медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th colspan="2" class="first table-death-head" id="illness_header">Заболевания<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th rowspan="2" class="first table-death-head" id="mkb_header">Код по МКБ-10<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th colspan="4" class="first table-death-head" id="all_cases">Количество случаев, в том числе:<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                        <tr style="display: table-row">
+                            <th style="display: table-cell" rowspan="2" class="first table-death-head" id="smo_header">Страховая медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" rowspan="2" class="first table-death-head" id="mo_header">Медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" colspan="2" class="first table-death-head" id="illness_header">Заболевания<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" rowspan="2" class="first table-death-head" id="mkb_header">Код по МКБ-10<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" colspan="4" class="first table-death-head" id="all_cases">Количество случаев, в том числе:<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
 
                         </tr>
-                        <tr>
-                            <th class="table-death-head illness_header" id="string_code_header">Код строки</th>
-                            <th class="table-death-head illness_header" id="nosologies_header">Заболевания, явившиеся причиной смерти<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th class="table-death-head" id="amp_header">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th class="table-death-head" id="smp_header">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th class="table-death-head" id="statzam_header">Стационарнозамещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th class="table-death-head" id="smp_out_header">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                        <tr style="display: table-row">
+                            <th style="display: table-cell" class="table-death-head illness_header" id="string_code_header">Код строки</th>
+                            <th style="display: table-cell" class="table-death-head illness_header" id="nosologies_header">Заболевания, явившиеся причиной смерти<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="amp_header">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_header">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="statzam_header">Стационарнозамещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_out_header">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
                         </tr>
                         {% for smo_name, smo in data.items %}
-                            <tr id='first-smo'>
-                                <th class="vertical-tr numheader0"; id="{{ smo_name }}" rowspan="{{ smo_list_len }}">{{ names_list|get_item:smo_name }}<a class="hideelembtn"><i  href="#" class="icon icon-circle-minus"></i></a></th>
+                            <tr style="display: table-row" class="{{ smo|get_id_by_name:smo_name }}">
+                                <th style="display: table-cell" class="vertical-tr numheader0 {{ smo|get_id_by_name:smo_name }}parent"; id="{{ smo|get_id_by_name:smo_name }}" rowspan="{{ smo|recount_rowspan_smo }}">{{ names_list|get_item:smo_name }}<a class="hideelembtn"><i  href="#" class="icon icon-circle-minus"></i></a></th>
 
                             {% for mo_name, mo in smo.items %}
 
-                                <th class="vertical-tr numheader1"; id="{{ mo_name }}" ; rowspan="{{ mo_list_len }}">{{ names_list|get_item:mo_name }}<a class="hideelembtn"><i href="#" class="icon icon-circle-minus"></i></a></th>
+                                <th style="display: table-cell" class="numheader1 {{ smo|get_id_by_name:smo_name }}child"; id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }}" ; rowspan="{{ mo|recount_rowspan_mo }}">{{ names_list|get_item:mo_name }}<a class="hideelembtn"><i href="#" class="icon icon-circle-minus"></i></a></th>
 
                                 {% for row in mo %}
-                                    <tr class="{{ smo_name }} {{ mo_name }}">
+                                    <tr style="display: {{ row|display_row }}" class="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}">
 
-                                        {%  for item in row %}
-
-                                        <td class="_numheader{{ row|get_number_by_value:item }}">{{ item }}</td>
+                                        {%  for num_item, item in row|get_enumerate %}
+                                        {% if num_item == 0 %}
+                                            {% if row|is_unhiddable:item %}
+                                                <td style="display: table-cell" id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}" class="_numheader{{ num_item }}">{{ item }}<a class="hideelembtn"><i href="#" class="icon icon-circle-plus"></i></a></td>
+                                            {% else %}
+                                                <td  class="_numheader{{ num_item }}">{{ item }}</td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td  class="_numheader{{ num_item }}">{{ item }}</td>
+                                        {% endif %}
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}

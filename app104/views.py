@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest,HttpR
 from django.conf import settings
 from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS, Smo_names
 from django.db.models import Count,Q
+from django.db.models.functions import Length
 from django.utils import timezone
 from dateutil import relativedelta
 from django.contrib.auth import authenticate, login, logout, REDIRECT_FIELD_NAME
@@ -302,7 +303,7 @@ def data_for_coord_death(request, *args):
             sum_skor_mp += count_skor_mp
         # последняя строка
         row = [0 for j in range(7)]
-        row[0] = '.....'
+        row[0] = '..'
         row[1] = 'Итого:'
         row[2] = '.....'
         row[3] = sum_amb
@@ -466,7 +467,7 @@ def data_for_illness(request, prev_month, prev_year,  *args):
                         sum_skor_mp += count_skor_mp
                     # последняя строка
                     row = [0 for j in range(7)]
-                    row[0] = '.....'
+                    row[0] = '..'
                     row[1] = 'Итого:'
                     row[2] = '.....'
                     row[3] = sum_amb
@@ -559,7 +560,7 @@ def data_for_illness_prev(request, prev_month, prev_year, *args):
                         sum_skor_mp += count_skor_mp
                     # последняя строка
                     row = [0 for j in range(7)]
-                    row[0] = '.....'
+                    row[0] = '..'
                     row[1] = 'Итого:'
                     row[2] = '.....'
                     row[3] = sum_amb
