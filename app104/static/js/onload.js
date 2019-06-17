@@ -15,6 +15,7 @@ function showDoc() {
 
 }
 
+
 $(document).ready(function(){
 $(".auth").click(function () {
 $("#auth_form").addClass("form--active");
@@ -32,8 +33,17 @@ $('.hideelembtn').click(function(){
     var _list = this.firstChild.className;
     var table = document.getElementById('table_illness');
     if ( _list.indexOf("icon-circle-minus") != -1 ){
-        $(this.firstChild).removeClass('icon-circle-minus');
-        $(this.firstChild).addClass('icon-circle-plus');
+
+        var newItem = document.createElement('a');
+        newItem.id = this.parentNode.id +'hidden';
+        document.getElementById('hiddenColumns').appendChild(newItem);
+        newItem.style.display = 'block';
+        newItem.addEventListener('click', function () {
+            showElems(newItem)
+        });
+        newItem.href = '#';
+        newItem.className = 'btn btn-success showelembtn';
+        newItem.innerText = this.parentNode.innerText + '  (вернуть)';
         this.parentNode.style.display = 'none';
 
         var elemsToHide = document.getElementsByClassName(this.parentNode.id);
@@ -248,7 +258,297 @@ $('#colorDiff').change(function () {
                 }
             }
         }
-})
 });
+$('.showelembtn').click(function () {
+    this.style.display = 'none';
+    var _cutId = this.id.split('hidden')[0];
+    var table = document.getElementById('table_illness');
+    var elemsToHide = document.getElementsByClassName(_cutId);
+        if (_cutId.split(/\s+/).length > 1) {
+            var parentElemsToShow = document.getElementsByClassName(_cutId.split(/\s+/)[0] + 'parent');
+        }
+        else {
+            var parentElemsToShow = new Array();
+        }
+
+        if (_cutId == 'smo_header') {
+
+           var items = document.getElementsByClassName('numheader0');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              }
+        };
+        if (_cutId == 'mo_header') {
+              var items = document.getElementsByClassName('numheader1');
+
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              }
+        };
+        if (_cutId == 'illness_header') {
+
+              document.getElementById('string_code_header').style.display = 'table-cell';
+              document.getElementById('nosologies_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader0');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              var items = document.getElementsByClassName('_numheader1');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'mkb_header') {
+              var items = document.getElementsByClassName('_numheader2');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'all_cases') {
+              var items = document.getElementsByClassName('_numheader3');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('amp_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader4');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('smp_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader5');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('statzam_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader6');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('smp_out_header').style.display = 'table-cell';
+        };
+        if (_cutId == 'string_code_header') {
+              document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
+              var items = document.getElementsByClassName('_numheader0');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'nosologies_header') {
+             document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
+             var items = document.getElementsByClassName('_numheader1');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'amp_header') {
+             var items = document.getElementsByClassName('_numheader3');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+
+        };
+        if (_cutId == 'smp_header') {
+              var items = document.getElementsByClassName('_numheader4');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        if (_cutId == 'statzam_header') {
+              var items = document.getElementsByClassName('_numheader5');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        if (_cutId == 'smp_out_header') {
+              var items = document.getElementsByClassName('_numheader6');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        var count_rows = 0;
+        for (let i = 0, len = elemsToHide.length; i < len; i++)
+         {
+             if (elemsToHide[i].style.display != 'table-cell') {
+                count_rows ++;
+             };
+            elemsToHide[i].style.display = 'table-cell';
+
+            }
+
+        for (let i = 0, len = parentElemsToHide.length; i < len; i++) {
+            parentElemsToHide[i].rowSpan -= count_rows;
+        };
+        if (parentElemsToHide.length == 0) {
+            var notHided = document.getElementsByClassName(_cutId+'child');
+            if (notHided.length > 0) {
+                for (let j = 0, len_0 = notHided.length; j < len_0; j++) {
+                    notHided[j].style.display = 'table-cell';
+                };
+            };
+        }
+
+    });
+
+
+});
+function showElems(editedItem) {
+    editedItem.style.display = 'none';
+    var _cutId = editedItem.id.split('hidden')[0];
+    var table = document.getElementById('table_illness');
+    var elemsToHide = document.getElementsByClassName(_cutId);
+    document.getElementById(_cutId).style.display = 'table-cell';
+        if (_cutId.split(/\s+/).length > 1) {
+            var parentElemsToShow = document.getElementsByClassName(_cutId.split(/\s+/)[0] + 'parent');
+        }
+        else {
+            var parentElemsToShow = new Array();
+        }
+
+        if (_cutId == 'smo_header') {
+
+           var items = document.getElementsByClassName('numheader0');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById(_cutId).rowSpan = 2;
+        };
+        if (_cutId == 'mo_header') {
+              var items = document.getElementsByClassName('numheader1');
+
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              }
+        };
+        if (_cutId == 'illness_header') {
+              document.getElementById('string_code_header').style.display = 'table-cell';
+              document.getElementById('nosologies_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader0');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              var items = document.getElementsByClassName('_numheader1');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'mkb_header') {
+              var items = document.getElementsByClassName('_numheader2');
+              document.getElementById(_cutId).rowSpan = 2;
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'all_cases') {
+              var items = document.getElementsByClassName('_numheader3');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('amp_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader4');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('smp_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader5');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('statzam_header').style.display = 'table-cell';
+              var items = document.getElementsByClassName('_numheader6');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('smp_out_header').style.display = 'table-cell';
+        };
+        if (_cutId == 'string_code_header') {
+              document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
+              var items = document.getElementsByClassName('_numheader0');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'nosologies_header') {
+             document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
+             var items = document.getElementsByClassName('_numheader1');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+        };
+        if (_cutId == 'amp_header') {
+             var items = document.getElementsByClassName('_numheader3');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+
+        };
+        if (_cutId == 'smp_header') {
+              var items = document.getElementsByClassName('_numheader4');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        if (_cutId == 'statzam_header') {
+              var items = document.getElementsByClassName('_numheader5');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        if (_cutId == 'smp_out_header') {
+              var items = document.getElementsByClassName('_numheader6');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        var count_rows = 0;
+        for (let i = 0, len = elemsToHide.length; i < len; i++)
+         {
+             if (elemsToHide[i].tagName == 'TR') {
+                elemsToHide[i].style.display = 'table-row';
+             }
+             else {
+                 elemsToHide[i].style.display = 'table-cell';
+             }
+
+            };
+        count_rows = hideRows(editedItem, elemsToHide);
+        if (count_rows != 0) {
+            document.getElementById(_cutId).rowSpan = count_rows + 1;
+        }
+        for (let i = 0, len = parentElemsToShow.length; i < len; i++) {
+            parentElemsToShow[i].rowSpan += count_rows;
+        };
+        if (parentElemsToShow.length == 0) {
+            var hided = document.getElementsByClassName(_cutId+'child');
+            if (hided.length > 0) {
+                for (let j = 0, len_0 = hided.length; j < len_0; j++) {
+                    hided[j].style.display = 'table-row';
+                };
+            };
+        }
+
+
+
+}
+function hideRows(editedElem, elemsToShow) {
+    var count_rows = 0;
+    for (let i = 0,len = elemsToShow.length; i < len; i++) {
+        if (elemsToShow[i].cells[0].innerText.length <= 2) {
+            elemsToShow[i].style.display = 'table-row';
+            count_rows += 1;
+        }
+        else {
+            elemsToShow[i].style.display = 'none';
+        }
+    }
+    return count_rows;
+}
 
 

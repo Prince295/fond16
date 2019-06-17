@@ -10,10 +10,54 @@
                 </div>
     <div class="gtco-loader"></div>
                 <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px;">
-                    <h3 style="font-family: 'Calibri Light'">Выгрузка данных за март 2019 года.</h3><br>
-                    <h3 style="font-family: 'Calibri Light'">Сравнение с данными за апрель 2019 года.</h3>
+                    <h3 style="font-family: 'Calibri Light'">Выгрузка данных за
+                        <select class="select2-selection select2-dropdown--above">
+                            <option>Январь</option>
+                            <option>Февраль</option>
+                            <option>Март</option>
+                            <option>Апрель</option>
+                            <option>Май</option>
+                            <option>Июнь</option>
+                            <option>Июль</option>
+                            <option>Август</option>
+                            <option>Сентябрь</option>
+                            <option>Октябрь</option>
+                            <option>Ноябрь</option>
+                            <option>Декабрь</option>
+                        </select> 2019 года.</h3><br>
+                    <h3 style="font-family: 'Calibri Light'">Сравнение с данными за
+                        <select class="select2-selection select2-dropdown--above">
+                            <option>Январь</option>
+                            <option>Февраль</option>
+                            <option>Март</option>
+                            <option>Апрель</option>
+                            <option>Май</option>
+                            <option>Июнь</option>
+                            <option>Июль</option>
+                            <option>Август</option>
+                            <option>Сентябрь</option>
+                            <option>Октябрь</option>
+                            <option>Ноябрь</option>
+                            <option>Декабрь</option>
+                        </select> 2019 года.</h3>
                 </div>
+                <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px;">
+                    <h3><select class="select2-selection select2-dropdown--above" size="3" multiple name="smo[]">
+                        <option disabled>Выберите Страховую компанию</option>
+                        {%  for smo_name in names_list.values %}
+                        <option>{{ smo_name }}</option>
+                        {% endfor %}
+                    </select></h3><br>
+                    <h3><select class="select2-selection select2-dropdown--above" size="3" multiple name="mo[]">
+                        <option disabled>Выберите медицинское учреждение</option>
+                        {%  for smo_name in names_list.values %}
+                        <option>{{ smo_name }}</option>
+                        {% endfor %}
+                    </select></h3>
+                </div>
+                <div id='hiddenColumns' class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px">
 
+                </div>
 
 
                 <div class="row">
@@ -44,12 +88,19 @@
                                 <th style="display: table-cell" class="numheader1 {{ smo|get_id_by_name:smo_name }}child"; id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }}" ; rowspan="{{ mo|recount_rowspan_mo }}">{{ names_list|get_item:mo_name }}<a class="hideelembtn"><i href="#" class="icon icon-circle-minus"></i></a></th>
 
                                 {% for row in mo %}
-                                    <tr style="display: {{ row|display_row }}" class="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}">
-
-                                        {%  for num_item, item in row|get_enumerate %}
+                                    <tr style="display: {{ row|display_row }};
+                                            {% if row|get_id == '.' %}
+                                                font-weight: bold;
+                                            {% endif %}"
+                                        class="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}">
+                                        {% for num_item, item in row|get_enumerate %}
                                         {% if num_item == 0 %}
                                             {% if row|is_unhiddable:item %}
-                                                <td style="display: table-cell" id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}" class="_numheader{{ num_item }}">{{ item }}<a class="hideelembtnnoz"><i href="#" class="icon icon-circle-plus"></i></a></td>
+                                                {% if row|get_id != '.' %}
+                                                    <td style="display: table-cell" id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}" class="_numheader{{ num_item }}">{{ item }}<a class="hideelembtnnoz"><i href="#" class="icon icon-circle-plus"></i></a></td>
+                                                {% else %}
+                                                    <td style="display: table-cell; font-weight: bold;" id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}" class="_numheader{{ num_item }}">{{ item }}</td>
+                                                {% endif %}
                                             {% else %}
                                                 <td  class="_numheader{{ num_item }}">{{ item }}</td>
                                             {% endif %}
