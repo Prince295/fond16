@@ -49,7 +49,7 @@
                                         {%  for num_item, item in row|get_enumerate %}
                                         {% if num_item == 0 %}
                                             {% if row|is_unhiddable:item %}
-                                                <td style="display: table-cell" id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}" class="_numheader{{ num_item }}">{{ item }}<a class="hideelembtn"><i href="#" class="icon icon-circle-plus"></i></a></td>
+                                                <td style="display: table-cell" id="{{ smo|get_id_by_name:smo_name }} {{ mo|get_id_by_name:mo_name }} {{ row|get_id }}" class="_numheader{{ num_item }}">{{ item }}<a class="hideelembtnnoz"><i href="#" class="icon icon-circle-plus"></i></a></td>
                                             {% else %}
                                                 <td  class="_numheader{{ num_item }}">{{ item }}</td>
                                             {% endif %}
@@ -67,6 +67,10 @@
                     </table>
                 </div>
                 <div class="col-md-8 col-md-offset-4 text-right" style="margin-top: -20px">
+                    <input type="checkbox" class="checkbox-inline" id="colorDiff">
+                    <a style="text-align-all: right; margin-top: 50px; color: #0b0b0b">Подсветить изменения</a><br>
+                    <a style="text-align-all: right; margin-top: 50px; color: #a94442">Красным подсвечена положительная динамика заболеваемости</a><br>
+                    <a style="text-align-all: right; margin-top: 50px; color: #00ffa3">Зеленым подсвечена отрицательная динамика заболеваемости</a><br>
                     <a style="text-align-all: right; margin-top: 50px">Примечание: запись new означает, что случай заболевания не наблюдался в прошлом месяце</a>
                 </div>
 

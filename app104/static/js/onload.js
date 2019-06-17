@@ -172,14 +172,83 @@ $('.hideelembtn').click(function(){
           elemsToDisplay[i].style.display = 'table-row';
 
         };
-        alert(elemsToDisplay.length);
 
-        document.getElementById(this.parentNode.id.split(/\s+/)[0]).rowSpan +=elemsToDisplay.length;
-        document.getElementById(this.parentNode.id.split(/\s+/)[0] + ' ' + this.parentNode.id.split(/\s+/)[1]).rowSpan +=elemsToDisplay.length;
+
+        document.getElementById(this.parentNode.id.split(/\s+/)[0]).rowSpan +=elemsToDisplay.length - 1;
+        document.getElementById(this.parentNode.id.split(/\s+/)[0] + ' ' + this.parentNode.id.split(/\s+/)[1]).rowSpan +=elemsToDisplay.length - 1;
 
     }
 });
 
+$('.hideelembtnnoz').click(function () {
+    var _list = this.firstChild.className;
+    var table = document.getElementById('table_illness');
+    if ( _list.indexOf("icon-circle-minus") != -1 ) {
+        $(this.firstChild).removeClass('icon-circle-minus');
+        $(this.firstChild).addClass('icon-circle-plus');
+        var elemsToDisplay = document.getElementsByClassName(this.parentNode.id);
+        for (let i = 0, len = elemsToDisplay.length; i < len; i++){
+          elemsToDisplay[i].style.display = 'none';
+        };
+        this.parentNode.parentNode.style.display = 'table-row';
+        document.getElementById(this.parentNode.id.split(/\s+/)[0]).rowSpan -=elemsToDisplay.length - 1;
+        document.getElementById(this.parentNode.id.split(/\s+/)[0] + ' ' + this.parentNode.id.split(/\s+/)[1]).rowSpan -=elemsToDisplay.length - 1;
+    }
+    else {
+        $(this.firstChild).addClass('icon-circle-minus');
+        $(this.firstChild).removeClass('icon-circle-plus');
+        var elemsToDisplay = document.getElementsByClassName(this.parentNode.id);
+        for (let i = 0, len = elemsToDisplay.length; i < len; i++){
+          elemsToDisplay[i].style.display = 'table-row';
+        };
+        document.getElementById(this.parentNode.id.split(/\s+/)[0]).rowSpan +=elemsToDisplay.length - 1;
+        document.getElementById(this.parentNode.id.split(/\s+/)[0] + ' ' + this.parentNode.id.split(/\s+/)[1]).rowSpan +=elemsToDisplay.length - 1;
+
+    }
+});
+$('#colorDiff').change(function () {
+        var tableElems = document.getElementById('table_illness').getElementsByTagName('td');
+        if (this.checked) {
+            for (let i = 0, len = tableElems.length; i < len; i++) {
+                if (tableElems[i].innerText.endsWith('%')) {
+                    var value = tableElems[i].innerText.split(/\s+/)[0];
+                    if (value.startsWith('new')) {
+                        tableElems[i].style.backgroundColor = '#a94442';
+                    }
+                    if (value.startsWith('-')) {
+                        if (Number(value) < -10) {
+                            tableElems[i].style.backgroundColor = '#00ffa3';
+                        }
+                    }
+                    else {
+                        if (Number(value) > 10) {
+                            tableElems[i].style.backgroundColor = '#a94442';
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            for (let i = 0, len = tableElems.length; i < len; i++) {
+                if (tableElems[i].innerText.endsWith('%')) {
+                    var value = tableElems[i].innerText.split(/\s+/)[0];
+                    if (value.startsWith('new')) {
+                        tableElems[i].style.backgroundColor = 'transparent';
+                    }
+                    if (value.startsWith('-')) {
+                        if (Number(value) < -10) {
+                            tableElems[i].style.backgroundColor = 'transparent';
+                        }
+                    }
+                    else {
+                        if (Number(value) > 10) {
+                            tableElems[i].style.backgroundColor = 'transparent';
+                        }
+                    }
+                }
+            }
+        }
+})
 });
 
 
