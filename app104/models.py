@@ -91,7 +91,7 @@ class Smo_names(models.Model):
     u"""Из схемы DICTADMIN таблица F002_LO - справочник
     информации о страховых медицинских организациях Лен. Области"""
 
-    smo_id = models.BigIntegerField(db_column='SMOCOD', verbose_name='Реестровый номер СМО')
+    smo_id = models.BigIntegerField(db_column='SMOCOD', verbose_name='Реестровый номер СМО', primary_key=True)
     ogrn = models.CharField(db_column='OGRN', max_length=15)
     phone = models.CharField(db_column='PHONE', max_length=40)
     filial_address = models.CharField(db_column='ADDR_F', max_length=254, verbose_name='Адрес филиала')
@@ -102,7 +102,7 @@ class Smo_names(models.Model):
         db_table = 'F002_LO'
 
 class Lpu_names(models.Model):
-    lpu_id = models.BigIntegerField(db_column='MCOD', blank=False, verbose_name='Код ЛПУ')
+    lpu_id = models.BigIntegerField(db_column='MCOD', blank=False, verbose_name='Код ЛПУ', primary_key=True)
     name_full = models.CharField(db_column='NAM_MOP', max_length=254, verbose_name='Название')
     name_short = models.CharField(db_column='NAM_MOK', max_length=254, verbose_name='Сокращенное название')
     address = models.CharField(db_column='ADDR_J', max_length=254, verbose_name='Адрес')

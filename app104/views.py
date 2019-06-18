@@ -105,7 +105,10 @@ def load_data(request):
     return render(request, 'coordination_illness.html')
 
 def base(request):
-    return render(request, 'coordination_illness.html')
+    all_smo = Smo_names.objects.using('dictadmin').all();
+    all_mo = Lpu_names.objects.using('dictadmin').all();
+    return render(request, 'coordination_illness.html', {'smo_data' : all_smo,
+                                                         'mo_data'  : all_mo  })
 
 
 def index(request):
@@ -316,7 +319,7 @@ def data_for_coord_death(request, *args):
             _data_coord_death[args[0]] = [row]
 
 
-def data_for_illness(request, prev_month, prev_year,  *args):
+def data_for_illness(request, prev_month, prev_year, mo_list, smo_list, daterange,  *args):
     u"""
     Данные по заболеваемости за выбранный месяц,
     также данные за прошлый месяц и данные за тот же месяц в прошлом году
@@ -387,8 +390,6 @@ def data_for_illness(request, prev_month, prev_year,  *args):
     Во всяком случае до ввода фильтра про МО и СМО и подтягивания данных в соответствии со значениями этого фильтра
     :return: записи в глобальной переменной _data_for_illness
     """
-
-    daterange = ['2019-03-01', '2019-03-31']
     if prev_month:
         d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
         d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
@@ -401,16 +402,14 @@ def data_for_illness(request, prev_month, prev_year,  *args):
                      '{year}-{month}-{day}'.format(year=d2.year, month=d2.month, day=d2.day)]
 
 
-    smo_list = [47042, 47045]
-    mo_list = [470014, 470001, 470003]
     for smo in smo_list:
-        _names[smo] = Smo_names.objects.using('dictadmin').filter(smo_id=smo).values_list('short_name',flat=True)
+        _names[smo] = Smo_names.objects.using('dictadmin').filter(smo_id=int(smo)).values_list('short_name',flat=True)
         if len(_names[smo] ) > 0 :
             _names[smo] = _names[smo][0]
         else:
             _names[smo] = u'Неизвестно'
     for mo in mo_list:
-        _names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=mo).values_list('name_short',flat=True)[0]
+        _names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(mo)).values_list('name_short',flat=True)[0]
     nosologies = Nosologies.objects.all().order_by('id')
     cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
                                                                  caseZid__zap_id__date_birth__range=calculate_date(args),
@@ -480,14 +479,14 @@ def data_for_illness(request, prev_month, prev_year,  *args):
                         _data_coord_illness[args[0]][smo][mo] = [row]
 
 
-def data_for_illness_prev(request, prev_month, prev_year, *args):
+def data_for_illness_prev(request, prev_month, prev_year, mo_list, smo_list, daterange, *args):
     u"""
     TODO: Так делать нехорошо. Поменяю структуру
     Дубль функции для извлечения данных по заболеваниям ( нужен, чтобы не запутаться в глобальных словарях)
     :return: записи в глобальной переменной _data_for_illness_prev_month or _data_for_illness_prev_year
     """
 
-    daterange = ['2019-03-01', '2019-03-31']
+
     if prev_month:
         d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
         d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
@@ -498,9 +497,6 @@ def data_for_illness_prev(request, prev_month, prev_year, *args):
         d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(years=-1)
         daterange = ['{year}-{month}-{day}'.format(year=d1.year, month=d1.month, day=d1.day),
                      '{year}-{month}-{day}'.format(year=d2.year, month=d2.month, day=d2.day)]
-
-    smo_list = [47042, 47045]
-    mo_list = [470014, 470001, 470003]
 
     nosologies = Nosologies.objects.all().order_by('id')
     cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
@@ -643,8 +639,18 @@ def coord_illness_urls(request, *args):
         :param request:
         :return:
         """
-    data_for_illness(request,None, None,  args[0])
-    data_for_illness_prev(request, True, None, args[0])
+    all_smo = Smo_names.objects.using('dictadmin').all();
+    all_mo = Lpu_names.objects.using('dictadmin').all();
+    selected_mo = request.GET.get('selected_mo', None)
+    selected_smo = request.GET.get('selected_smo', None)
+    selected_year_1 = request.GET.get('selected_year_1', None)
+    selected_month_1 = request.GET.get('selected_month_1', None)
+    selected_year_2 = request.GET.get('selected_year_2', None)
+    selected_month_2 = request.GET.get('selected_month_2', None)
+    selected_mo = selected_mo.split(',')
+    selected_smo = selected_smo.split(',')
+    data_for_illness(request,None, None, selected_mo, selected_smo, get_daterange(selected_year_1, selected_month_1), args[0])
+    data_for_illness_prev(request, True, None, selected_mo, selected_smo, get_daterange(selected_year_2, selected_month_2), args[0])
     len_smo = {}
     calculated_data = return_data_illness(request, args)
     if args and len(args) > 0:
@@ -655,7 +661,9 @@ def coord_illness_urls(request, *args):
         return render(request, 'coordination_illness.html', {'data' : calculated_data[args[0]],
                                                              'smo_list_len' : len_smo,
                                                              'mo_list_len' : len_mo,
-                                                             'names_list' : _names})
+                                                             'names_list' : _names,
+                                                             'smo_data' : all_smo,
+                                                             'mo_data' : all_mo})
 
 def return_data_illness(request, args):
     u"""
@@ -710,6 +718,39 @@ def get_column(new, old):
             result = 0.00
     return u'{} %'.format(str(result))
 
+def get_daterange(year, month):
+    u"""
+    Возвращает строковое представление дат для выгрузки
+    :return daterange :type list :var ['2019-03-01', '2019-03-31']"""
+    month_endswith = { '01' : '01-31',
+                       '02' : '02-28',
+                       '03' : '03-31',
+                       '04' : '04-30',
+                       '05' : '05-31',
+                       '06' : '06-30',
+                       '07' : '07-31',
+                       '08' : '08-31',
+                       '09' : '09-30',
+                       '10' : '10-31',
+                       '11' : '11-30',
+                       '12' : '12-31'}
+    if is_leap_year(year):
+        month_endswith['02'] = '02-29'
+    if len(str(month)) == 1:
+        month = str(0) + str(month)
+    return [str(year) + '-' + str(month) + '-01', str(year) + '-' + month_endswith[month]]
+
+
+def is_leap_year(year):
+    year = int(year)
+    if year % 400 == 0:
+        return True
+    elif year % 100 == 0:
+        return False
+    elif year % 4 == 0:
+        return True
+    else:
+        return False
 
 def coord_death_urls(request, *args):
     u"""

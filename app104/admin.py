@@ -3,6 +3,7 @@ from django.template.defaulttags import register
 from django.db.models.functions import Length
 from .models import Nosologies
 from django.db.models import Q
+from django.utils.timezone import now
 from .views import _names
 
 
@@ -72,3 +73,12 @@ def get_id_by_name(data, name):
 def get_id(row):
     return row[0][0]
 
+@register.filter
+def get_years(data):
+    years = []
+    current_year = now().year
+    years.append(current_year)
+    years.append(current_year - 1)
+    years.append(current_year - 2)
+    years.append(current_year - 3)
+    return years

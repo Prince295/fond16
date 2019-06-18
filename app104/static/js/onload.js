@@ -223,7 +223,7 @@ $('#colorDiff').change(function () {
                 if (tableElems[i].innerText.endsWith('%')) {
                     var value = tableElems[i].innerText.split(/\s+/)[0];
                     if (value.startsWith('new')) {
-                        tableElems[i].style.backgroundColor = '#a94442';
+                        tableElems[i].style.backgroundColor = '#e9432088';
                     }
                     if (value.startsWith('-')) {
                         if (Number(value) < -10) {
@@ -232,7 +232,7 @@ $('#colorDiff').change(function () {
                     }
                     else {
                         if (Number(value) > 10) {
-                            tableElems[i].style.backgroundColor = '#a94442';
+                            tableElems[i].style.backgroundColor = '#e9432088';
                         }
                     }
                 }
@@ -258,6 +258,61 @@ $('#colorDiff').change(function () {
                 }
             }
         }
+});
+$('#coord_d_1').click(function () {
+    var selected_mo = $("#mo_selection").val();
+    var selected_smo = $("#smo_selection").val();
+    var selected_year_1 = $("#select_year_1 option:selected").val();
+    var selected_year_2 = $("#select_year_2 option:selected").val();
+    var selected_month_1 = $("#select_month_1 option:selected").val();
+    var selected_month_2 = $("#select_month_2 option:selected").val();
+    this.href = '/coordination_illness/adult?selected_smo=' + selected_smo + '&selected_mo=' + selected_mo +
+    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
+    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
+});
+$('#coord_d_2').click(function () {
+    var selected_mo = $("#mo_selection").val();
+    var selected_smo = $("#smo_selection").val();
+    var selected_year_1 = $("#select_year_1 option:selected").val();
+    var selected_year_2 = $("#select_year_2 option:selected").val();
+    var selected_month_1 = $("#select_month_1 option:selected").val();
+    var selected_month_2 = $("#select_month_2 option:selected").val();
+    this.href = '/coordination_illness/pensioners?selected_smo=' + selected_smo + '&selected_mo=' + selected_mo +
+    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
+    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
+});
+$('#coord_d_3').click(function () {
+    var selected_mo = $("#mo_selection").val();
+    var selected_smo = $("#smo_selection").val();
+    var selected_year_1 = $("#select_year_1 option:selected").val();
+    var selected_year_2 = $("#select_year_2 option:selected").val();
+    var selected_month_1 = $("#select_month_1 option:selected").val();
+    var selected_month_2 = $("#select_month_2 option:selected").val();
+    this.href = '/coordination_illness/child?selected_smo=' + selected_smo + '&selected_mo=' + selected_mo +
+    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
+    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
+});
+$('#coord_d_4').click(function () {
+    var selected_mo = $("#mo_selection").val();
+    var selected_smo = $("#smo_selection").val();
+    var selected_year_1 = $("#select_year_1 option:selected").val();
+    var selected_year_2 = $("#select_year_2 option:selected").val();
+    var selected_month_1 = $("#select_month_1 option:selected").val();
+    var selected_month_2 = $("#select_month_2 option:selected").val();
+    this.href = '/coordination_illness/babies?selected_smo=' + selected_smo + '&selected_mo=' + selected_mo +
+    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
+    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
+});
+$('#coord_d_5').click(function () {
+    var selected_mo = $("#mo_selection").val();
+    var selected_smo = $("#smo_selection").val();
+    var selected_year_1 = $("#select_year_1 option:selected").val();
+    var selected_year_2 = $("#select_year_2 option:selected").val();
+    var selected_month_1 = $("#select_month_1 option:selected").val();
+    var selected_month_2 = $("#select_month_2 option:selected").val();
+    this.href = '/coordination_illness/all?selected_smo=' + selected_smo + '&selected_mo=' + selected_mo +
+    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
+    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
 });
 $('.showelembtn').click(function () {
     this.style.display = 'none';
@@ -550,5 +605,3 @@ function hideRows(editedElem, elemsToShow) {
     }
     return count_rows;
 }
-
-
