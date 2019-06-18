@@ -650,25 +650,30 @@ def coord_illness_urls(request, *args):
     selected_month_1 = request.GET.get('selected_month_1', None)
     selected_year_2 = request.GET.get('selected_year_2', None)
     selected_month_2 = request.GET.get('selected_month_2', None)
-    selected_mo = selected_mo.split(',')
-    selected_smo = selected_smo.split(',')
-    data_for_illness(request,None, None, selected_mo, selected_smo, get_daterange(selected_year_1, selected_month_1), args[0])
-    data_for_illness_prev(request, True, None, selected_mo, selected_smo, get_daterange(selected_year_2, selected_month_2), args[0])
-    len_smo = {}
-    calculated_data = return_data_illness(request, args)
-    if args and len(args) > 0:
-        for smo_name, smo_val in _data_coord_illness[args[0]].items():
-            for mo_name, mo_val in smo_val.items():
-                len_mo = len(mo_val) + 1
-            len_smo = len(_data_coord_illness[args[0]][smo_name].keys()) * len_mo
-        return render(request, 'coordination_illness.html', {'data' : calculated_data[args[0]],
-                                                             'smo_list_len' : len_smo,
-                                                             'mo_list_len' : len_mo,
-                                                             'names_list' : _names,
-                                                             'smo_data' : all_smo,
-                                                             'mo_data' : all_mo})
+    if selected_mo and selected_smo:
+        selected_mo = selected_mo.split(',')
+        selected_smo = selected_smo.split(',')
+        data_for_illness(request,None, None, selected_mo, selected_smo, get_daterange(selected_year_1, selected_month_1), args[0])
+        data_for_illness_prev(request, True, None, selected_mo, selected_smo, get_daterange(selected_year_2, selected_month_2), args[0])
+        len_smo = {}
+        calculated_data = return_data_illness(request, args, selected_smo, selected_mo)
+        if args and len(args) > 0:
+            for smo_name, smo_val in _data_coord_illness[args[0]].items():
+                for mo_name, mo_val in smo_val.items():
+                    len_mo = len(mo_val) + 1
+                len_smo = len(_data_coord_illness[args[0]][smo_name].keys()) * len_mo
+            return render(request, 'coordination_illness.html', {'data' : calculated_data[args[0]],
+                                                                 'smo_list_len' : len_smo,
+                                                                 'mo_list_len' : len_mo,
+                                                                 'names_list' : _names,
+                                                                 'smo_data' : all_smo,
+                                                                 'mo_data' : all_mo})
+    else:
+        return render(request, 'coordination_illness.html', {'smo_data'  : all_smo,
+                                                             'mo_data'   : all_mo,
+                                                             'names_list': _names})
 
-def return_data_illness(request, args):
+def return_data_illness(request, args, smo_list, mo_list):
     u"""
     Функция берет 2 словаря из глобальных данных,
     сравнивает значения в них - пересчитывает их в отдельный словарь, который и уходит в отчет
@@ -679,31 +684,37 @@ def return_data_illness(request, args):
     """
 
     data_for_print = {args[0]: {}}
-    data_for_print[args[0]] = copy_data(data_for_print[args[0]], _data_coord_illness[args[0]])
+    data_for_print[args[0]] = copy_data(data_for_print[args[0]], _data_coord_illness[args[0]], smo_list, mo_list)
     for smo, mo_dict in _data_coord_illness[args[0]].items():
-        for mo, rows in mo_dict.items():
-            for j, row in enumerate(rows):
-                for i in range(3):
-                    data_for_print[args[0]][smo][mo][j][i] = _data_coord_illness_prev_year[args[0]][smo][mo][j][i]
-                for i in range(3,7,1):
-                    data_for_print[args[0]][smo][mo][j][i] = get_column(_data_coord_illness[args[0]][smo][mo][j][i], _data_coord_illness_prev_year[args[0]][smo][mo][j][i])
+        if str(smo) in smo_list:
+            for mo, rows in mo_dict.items():
+                if str(mo) in mo_list:
+                    for j, row in enumerate(rows):
+                        for i in range(3):
+                            data_for_print[args[0]][smo][mo][j][i] = _data_coord_illness_prev_year[args[0]][smo][mo][j][i]
+                        for i in range(3,7,1):
+                            data_for_print[args[0]][smo][mo][j][i] = get_column(_data_coord_illness[args[0]][smo][mo][j][i], _data_coord_illness_prev_year[args[0]][smo][mo][j][i])
     return data_for_print
 
-def copy_data(result, copied):
+def copy_data(result, copied, smo_list, mo_list):
     u"""
     затычка, чтобы избежать потери данных
     :param result: структура, которую меняем,
     :param copied: структура, которую необходимо разбить на части
+    :param smo_list: список запрашиваемых страховых компаний
+    :param mo_list: список запрашиваемых муниципальных организаций
     :return: dict
     """
     for k, v in copied.items():
-        result[k] = {}
-        for kk, vv in v.items():
-            result[k][kk] = []
-            for num, it in enumerate(vv):
-                result[k][kk].append([])
-                for i in it:
-                    result[k][kk][num].append(0)
+        if str(k) in smo_list:
+            result[k] = {}
+            for kk, vv in v.items():
+                if str(kk) in mo_list:
+                    result[k][kk] = []
+                    for num, it in enumerate(vv):
+                        result[k][kk].append([])
+                        for i in it:
+                            result[k][kk][num].append(0)
     return result
 
 

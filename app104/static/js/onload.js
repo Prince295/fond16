@@ -607,6 +607,130 @@ function showElems(editedItem) {
                 document.getElementById(_cutId).rowSpan = count_rows + count_childs;
             };
         }
+        editedItem.remove();
+        var hiddenCols = document.getElementById('hiddenColumns').childNodes;
+        for (let i = 0, len = hiddenCols.length; i < len; i++) {
+            try {
+
+                if (hiddenCols[i].style.display == 'block') {
+                    var hidden_col_id = hiddenCols[i].id.split('hidden')[0];
+                    if (hidden_col_id == 'smo_header') {
+
+                        var items = document.getElementsByClassName('numheader0');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'mo_header') {
+                        var items = document.getElementsByClassName('numheader1');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                    }
+                    ;
+                    if (hidden_col_id == 'illness_header') {
+
+                        var items = document.getElementsByClassName('_numheader0');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                        var items = document.getElementsByClassName('_numheader1');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'mkb_header') {
+                        var items = document.getElementsByClassName('_numheader2');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'all_cases') {
+                        var items = document.getElementsByClassName('_numheader3');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                        var items = document.getElementsByClassName('_numheader4');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                        var items = document.getElementsByClassName('_numheader5');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                        var items = document.getElementsByClassName('_numheader6');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'string_code_header') {
+                        var items = document.getElementsByClassName('_numheader0');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'nosologies_header') {
+                        var items = document.getElementsByClassName('_numheader1');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'amp_header') {
+                        var items = document.getElementsByClassName('_numheader3');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+
+                    }
+                    ;
+                    if (hidden_col_id == 'smp_header') {
+                        var items = document.getElementsByClassName('_numheader4');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'statzam_header') {
+                        var items = document.getElementsByClassName('_numheader5');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                    if (hidden_col_id == 'smp_out_header') {
+                        var items = document.getElementsByClassName('_numheader6');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        ;
+                    }
+                    ;
+                }
+            }
+            catch {
+
+            };
+        }
+
 
 
 
