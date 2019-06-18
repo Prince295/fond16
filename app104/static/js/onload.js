@@ -455,7 +455,14 @@ function showElems(editedItem) {
     var _cutId = editedItem.id.split('hidden')[0];
     var table = document.getElementById('table_illness');
     var elemsToHide = document.getElementsByClassName(_cutId);
-    document.getElementById(_cutId).style.display = 'table-cell';
+    if (document.getElementById(_cutId).tagName == 'TR') {
+        document.getElementById(_cutId).style.display = 'table-row';
+    }
+    else {
+        document.getElementById(_cutId).style.display = 'table-cell';
+    }
+
+
         if (_cutId.split(/\s+/).length > 1) {
             var parentElemsToShow = document.getElementsByClassName(_cutId.split(/\s+/)[0] + 'parent');
         }
@@ -574,18 +581,30 @@ function showElems(editedItem) {
 
             };
         count_rows = hideRows(editedItem, elemsToHide);
+
+        var parentTableRow = document.getElementById(_cutId+'rowsmo');
+
+        if (!parentTableRow){
+
+        }
+        else {
+            document.getElementById(_cutId+'rowsmo').style.display = 'table-row';
+        }
         if (count_rows != 0) {
             document.getElementById(_cutId).rowSpan = count_rows + 1;
         }
         for (let i = 0, len = parentElemsToShow.length; i < len; i++) {
             parentElemsToShow[i].rowSpan += count_rows;
         };
+        var count_childs = 0;
         if (parentElemsToShow.length == 0) {
             var hided = document.getElementsByClassName(_cutId+'child');
             if (hided.length > 0) {
                 for (let j = 0, len_0 = hided.length; j < len_0; j++) {
-                    hided[j].style.display = 'table-row';
+                    hided[j].style.display = 'table-cell';
+                    count_childs +=1;
                 };
+                document.getElementById(_cutId).rowSpan = count_rows + count_childs;
             };
         }
 

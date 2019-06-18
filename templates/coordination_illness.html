@@ -92,7 +92,7 @@
                             <th style="display: table-cell" class="table-death-head" id="smp_out_header">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
                         </tr>
                         {% for smo_name, smo in data.items %}
-                            <tr style="display: table-row" class="{{ smo|get_id_by_name:smo_name }}">
+                            <tr style="display: table-row" class="{{ smo|get_id_by_name:smo_name }}" id="{{ smo|get_id_by_name:smo_name }}rowsmo">
                                 <th style="display: table-cell" class="vertical-tr numheader0 {{ smo|get_id_by_name:smo_name }}parent"; id="{{ smo|get_id_by_name:smo_name }}" rowspan="{{ smo|recount_rowspan_smo }}">{{ names_list|get_item:smo_name }}<a class="hideelembtn"><i  href="#" class="icon icon-circle-minus"></i></a></th>
 
                             {% for mo_name, mo in smo.items %}

@@ -411,72 +411,73 @@ def data_for_illness(request, prev_month, prev_year, mo_list, smo_list, daterang
     for mo in mo_list:
         _names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(mo)).values_list('name_short',flat=True)[0]
     nosologies = Nosologies.objects.all().order_by('id')
-    cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
-                                                                 caseZid__zap_id__date_birth__range=calculate_date(args),
-                                                                 caseZid__isnull=False)
+    cases = SLS.objects.select_related('caseZid__zap_id').filter(caseZid__dateBeg__range=daterange,
+                                                                 caseZid__zap_id__date_birth__range=calculate_date(args))
 
     if args and not check_cache_coord_illness_age(_data_coord_illness, args):
         _data_coord_illness[args[0]] = {}
-        for smo in smo_list:
+    for smo in smo_list:
+        if not check_cache_coord_illness_smo(_data_coord_illness, args, smo_list):
             _data_coord_illness[args[0]][smo] = {}
-            if not check_cache_coord_illness_mo(_data_coord_illness,args, mo_list, smo):
-                smo_filter = cases.filter(caseZid__zap_id__smo_id=smo)
-                for mo in mo_list:
-                    mo_filter = smo_filter.filter(lpuId__startswith=mo)
-                    amb = mo_filter.filter(caseZid__stat_or_amb=3)
-                    stat = mo_filter.filter(caseZid__stat_or_amb__in=[1, 2])
-                    stat_zam = mo_filter.filter(caseZid__stat_or_amb__isnull=True)
-                    skor_mp = mo_filter.filter(caseZid__stat_or_amb=4).exclude(unit__startswith=SLS.lpuId)
-                    sum_amb = 0
-                    sum_stat = 0
-                    sum_stat_zam = 0
-                    sum_skor_mp = 0
-                    for number, _obj in enumerate(nosologies):
-                        row = [0 for j in range(7)]
-                        row[0] = _obj.number
-                        row[1] = _obj.name
-                        row[2] = (_obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
-                        count_amb = 0
-                        for sl in amb:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_amb += 1
-                        count_stat = 0
-                        for sl in stat:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_stat += 1
-                        count_stat_zam = 0
-                        for sl in stat_zam:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_stat_zam += 1
-                        count_skor_mp = 0
-                        for sl in skor_mp:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_skor_mp += 1
-                        row[3] = count_amb
-                        row[4] = count_stat
-                        row[5] = count_stat_zam
-                        row[6] = count_skor_mp
-                        if _data_coord_illness[args[0]][smo].get(mo, None):
-                            _data_coord_illness[args[0]][smo][mo].append(row)
-                        else:
-                            _data_coord_illness[args[0]][smo][mo] = [row]
-                        sum_amb += count_amb
-                        sum_stat += count_stat
-                        sum_stat_zam += count_stat_zam
-                        sum_skor_mp += count_skor_mp
-                    # последняя строка
+        smo_filter = cases.filter(caseZid__zap_id__smo_id=smo)
+        for mo in mo_list:
+            if not check_cache_coord_illness_mo(_data_coord_illness, args, mo_list, smo):
+                mo_filter = smo_filter.filter(caseZid__lpu=mo)
+                amb = mo_filter.filter(caseZid__stat_or_amb=3)
+                stat = mo_filter.filter(caseZid__stat_or_amb__in=[1, 2])
+                stat_zam = mo_filter.filter(caseZid__stat_or_amb__isnull=True)
+                skor_mp = mo_filter.filter(caseZid__stat_or_amb=4)
+                sum_amb = 0
+                sum_stat = 0
+                sum_stat_zam = 0
+                sum_skor_mp = 0
+                for number, _obj in enumerate(nosologies):
                     row = [0 for j in range(7)]
-                    row[0] = '..'
-                    row[1] = 'Итого:'
-                    row[2] = '.....'
-                    row[3] = sum_amb
-                    row[4] = sum_stat
-                    row[5] = sum_stat_zam
-                    row[6] = sum_skor_mp
+                    row[0] = _obj.number
+                    row[1] = _obj.name
+                    row[2] = (
+                                _obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
+                    count_amb = 0
+                    for sl in amb:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_amb += 1
+                    count_stat = 0
+                    for sl in stat:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_stat += 1
+                    count_stat_zam = 0
+                    for sl in stat_zam:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_stat_zam += 1
+                    count_skor_mp = 0
+                    for sl in skor_mp:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_skor_mp += 1
+                    row[3] = count_amb
+                    row[4] = count_stat
+                    row[5] = count_stat_zam
+                    row[6] = count_skor_mp
                     if _data_coord_illness[args[0]][smo].get(mo, None):
                         _data_coord_illness[args[0]][smo][mo].append(row)
                     else:
                         _data_coord_illness[args[0]][smo][mo] = [row]
+                    sum_amb += count_amb
+                    sum_stat += count_stat
+                    sum_stat_zam += count_stat_zam
+                    sum_skor_mp += count_skor_mp
+                # последняя строка
+                row = [0 for j in range(7)]
+                row[0] = '..'
+                row[1] = 'Итого:'
+                row[2] = '.....'
+                row[3] = sum_amb
+                row[4] = sum_stat
+                row[5] = sum_stat_zam
+                row[6] = sum_skor_mp
+                if _data_coord_illness[args[0]][smo].get(mo, None):
+                    _data_coord_illness[args[0]][smo][mo].append(row)
+                else:
+                    _data_coord_illness[args[0]][smo][mo] = [row]
 
 
 def data_for_illness_prev(request, prev_month, prev_year, mo_list, smo_list, daterange, *args):
@@ -499,74 +500,72 @@ def data_for_illness_prev(request, prev_month, prev_year, mo_list, smo_list, dat
                      '{year}-{month}-{day}'.format(year=d2.year, month=d2.month, day=d2.day)]
 
     nosologies = Nosologies.objects.all().order_by('id')
-    cases = SLS.objects.select_related('caseZid__zap_id').filter(dateBeg__range=daterange,
+    cases = SLS.objects.select_related('caseZid__zap_id').filter(caseZid__dateBeg__range=daterange,
                                                                  caseZid__zap_id__date_birth__range=calculate_date(
-                                                                     args),
-                                                                 caseZid__isnull=False)
-
+                                                                     args))
     if args and not check_cache_coord_illness_age(_data_coord_illness_prev_year, args):
         _data_coord_illness_prev_year[args[0]] = {}
-        for smo in smo_list:
+    for smo in smo_list:
+        if not check_cache_coord_illness_smo(_data_coord_illness_prev_year, args, smo_list):
             _data_coord_illness_prev_year[args[0]][smo] = {}
+        smo_filter = cases.filter(caseZid__zap_id__smo_id=smo)
+        for mo in mo_list:
             if not check_cache_coord_illness_mo(_data_coord_illness_prev_year, args, mo_list, smo):
-                smo_filter = cases.filter(caseZid__zap_id__smo_id=smo)
-                for mo in mo_list:
-                    mo_filter = smo_filter.filter(lpuId__startswith=mo)
-                    amb = mo_filter.filter(caseZid__stat_or_amb=3)
-                    stat = mo_filter.filter(caseZid__stat_or_amb__in=[1, 2])
-                    stat_zam = mo_filter.filter(caseZid__stat_or_amb__isnull=True)
-                    skor_mp = mo_filter.filter(caseZid__stat_or_amb=4).exclude(unit__startswith=SLS.lpuId)
-                    sum_amb = 0
-                    sum_stat = 0
-                    sum_stat_zam = 0
-                    sum_skor_mp = 0
-                    for number, _obj in enumerate(nosologies):
-                        row = [0 for j in range(7)]
-                        row[0] = _obj.number
-                        row[1] = _obj.name
-                        row[2] = (
-                                    _obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
-                        count_amb = 0
-                        for sl in amb:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_amb += 1
-                        count_stat = 0
-                        for sl in stat:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_stat += 1
-                        count_stat_zam = 0
-                        for sl in stat_zam:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_stat_zam += 1
-                        count_skor_mp = 0
-                        for sl in skor_mp:
-                            if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
-                                count_skor_mp += 1
-                        row[3] = count_amb
-                        row[4] = count_stat
-                        row[5] = count_stat_zam
-                        row[6] = count_skor_mp
-                        if _data_coord_illness_prev_year[args[0]][smo].get(mo, None):
-                            _data_coord_illness_prev_year[args[0]][smo][mo].append(row)
-                        else:
-                            _data_coord_illness_prev_year[args[0]][smo][mo] = [row]
-                        sum_amb += count_amb
-                        sum_stat += count_stat
-                        sum_stat_zam += count_stat_zam
-                        sum_skor_mp += count_skor_mp
-                    # последняя строка
+                mo_filter = smo_filter.filter(caseZid__lpu=mo)
+                amb = mo_filter.filter(caseZid__stat_or_amb=3)
+                stat = mo_filter.filter(caseZid__stat_or_amb__in=[1, 2])
+                stat_zam = mo_filter.filter(caseZid__stat_or_amb__isnull=True)
+                skor_mp = mo_filter.filter(caseZid__stat_or_amb=4)
+                sum_amb = 0
+                sum_stat = 0
+                sum_stat_zam = 0
+                sum_skor_mp = 0
+                for number, _obj in enumerate(nosologies):
                     row = [0 for j in range(7)]
-                    row[0] = '..'
-                    row[1] = 'Итого:'
-                    row[2] = '.....'
-                    row[3] = sum_amb
-                    row[4] = sum_stat
-                    row[5] = sum_stat_zam
-                    row[6] = sum_skor_mp
+                    row[0] = _obj.number
+                    row[1] = _obj.name
+                    row[2] = (_obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
+                    count_amb = 0
+                    for sl in amb:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_amb += 1
+                    count_stat = 0
+                    for sl in stat:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_stat += 1
+                    count_stat_zam = 0
+                    for sl in stat_zam:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_stat_zam += 1
+                    count_skor_mp = 0
+                    for sl in skor_mp:
+                        if _obj.mkbFirst <= sl.mkbExtra and _obj.mkbLast >= sl.mkbExtra:
+                            count_skor_mp += 1
+                    row[3] = count_amb
+                    row[4] = count_stat
+                    row[5] = count_stat_zam
+                    row[6] = count_skor_mp
                     if _data_coord_illness_prev_year[args[0]][smo].get(mo, None):
                         _data_coord_illness_prev_year[args[0]][smo][mo].append(row)
                     else:
                         _data_coord_illness_prev_year[args[0]][smo][mo] = [row]
+                    sum_amb += count_amb
+                    sum_stat += count_stat
+                    sum_stat_zam += count_stat_zam
+                    sum_skor_mp += count_skor_mp
+                # последняя строка
+                row = [0 for j in range(7)]
+                row[0] = '..'
+                row[1] = 'Итого:'
+                row[2] = '.....'
+                row[3] = sum_amb
+                row[4] = sum_stat
+                row[5] = sum_stat_zam
+                row[6] = sum_skor_mp
+                if _data_coord_illness_prev_year[args[0]][smo].get(mo, None):
+                    _data_coord_illness_prev_year[args[0]][smo][mo].append(row)
+                else:
+                    _data_coord_illness_prev_year[args[0]][smo][mo] = [row]
 
 
 
@@ -594,6 +593,7 @@ def check_cache_coord_illness_age(_dict, args):
     :param count: количество столбцов :type int
     :return: :type bool
     """
+
     if args and (len(args) > 0) and _dict.get(args[0], None):
         return True
     else:
@@ -608,9 +608,12 @@ def check_cache_coord_illness_smo(_dict, args, smo_list):
         :param count: количество столбцов :type int
         :return: :type bool
         """
-    for smo in smo_list:
-        if not _dict[args[0]].get(smo, None):
-            return False
+    if not check_cache_coord_illness_age(_dict, args):
+        for smo in smo_list:
+            if not _dict[args[0]].get(smo, None):
+                return False
+    else:
+        return False
     return True
 
 def check_cache_coord_illness_mo(_dict, args, mo_list, smo):
