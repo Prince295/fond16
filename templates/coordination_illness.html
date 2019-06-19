@@ -44,7 +44,7 @@
                         </select> года.</h3>
                 </div>
                 <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px;">
-                    <h3>Выберите Страховую компанию<br><br><select class="select2-selection select2-dropdown--above" size="3" multiple name="smo[]" id="smo_selection">
+                    <h3>Выберите Страховую компанию<br><br><select class="select2-selection select2-dropdown--above" size="6" multiple name="smo[]" id="smo_selection">
                         <option disabled>Страховая компания</option>
                         {%  for smo_item in smo_data %}
                         <option value="{{ smo_item.smo_id }}">{{ smo_item.short_name }}</option>

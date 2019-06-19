@@ -602,6 +602,7 @@ function showElems(editedItem) {
             if (hided.length > 0) {
                 for (let j = 0, len_0 = hided.length; j < len_0; j++) {
                     hided[j].style.display = 'table-cell';
+                    hided[j].rowSpan = count_rows / hided.length + 1;
                     count_childs +=1;
                 };
                 document.getElementById(_cutId).rowSpan = count_rows + count_childs;
@@ -741,6 +742,14 @@ function hideRows(editedElem, elemsToShow) {
         if (elemsToShow[i].cells[0].innerText.length <= 2) {
             elemsToShow[i].style.display = 'table-row';
             count_rows += 1;
+            var need_to_change_icon = elemsToShow[i].getElementsByClassName('icon-circle-minus');
+            if (!need_to_change_icon) {}
+            else {
+
+                $(need_to_change_icon[0]).addClass('icon-circle-plus');
+                $(need_to_change_icon[0]).removeClass('icon-circle-minus');
+            }
+
         }
         else {
             elemsToShow[i].style.display = 'none';

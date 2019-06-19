@@ -1,7 +1,10 @@
+import pandas as pd
+from django_pandas.managers import DataFrameManager
+from django_pandas.io import read_frame
+
 from django.shortcuts import render, resolve_url
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest,HttpResponseRedirect
 from django.conf import settings
-from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS, Smo_names
 from django.db.models import Count,Q
 from django.db.models.functions import Length
 from django.utils import timezone
@@ -9,7 +12,8 @@ from dateutil import relativedelta
 from django.contrib.auth import authenticate, login, logout, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
 
-
+from .views_utils import copy_data, get_daterange, get_column, is_leap_year, calculate_date
+from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS, Smo_names
 
 
 global _data, _data_coord_death, _lpu_names, _data_coord_illness, _data_coord_illness_prev_year, data_for_illness_prev_month, _names
@@ -62,47 +66,23 @@ def logout_func(request):
 
 
 def load_data(request):
-    if not _data:
-        daterange = ["2019-03-01", "2019-03-31"]
-        nosologies = Nosologies.objects.all().order_by('id')
-        lpu_list = []
-        lpus = {1: 47007406,
-                2: 470067,
-                3: 470003,
-                4: 470006}
+    u"""
+    Выгрузка всех случаев в сводную таблицу
+    ( на тестовой базе размер таблицы около 100 мб, что позволяет выгружать все данные,
+    в дальнейшем будет иметь смысл догружать данные, а не выгружать их заново,
+    к сожалению, на базе Фонда ЛО не хранится информация  о createDateTime и ModifyDateTime случаев и пациентов
 
-        for k, v in lpus.items():
-            if len(str(v)) > 7:
-                lpus[k] = str(v)[:6]
-            else:
-                lpus[k] = str(v)
-            try:
-                _lpu_names[lpus[k]] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(lpus[k])).values_list('name_short',flat=True)[0]
-            except:
-                _lpu_names[lpus[k]] = lpus[k]
-        for k, v in lpus.items():
-            lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange, lpuId__startswith=v).annotate(ds1count=Count(SLS.mkbExtra)))
-            lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange, lpuId__startswith=v, caseZid__stat_or_amb__in=[1,2]).annotate(
-                ds1count=Count(SLS.mkbExtra)))
-            lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange).filter(lpuId__startswith=v, caseZid__stat_or_amb=3).annotate(
-                    ds1count=Count(SLS.mkbExtra)))
-        row = [0 for j in range(len(lpu_list) + 5)]
-        for i, n in enumerate(nosologies):
-            _data.append([0 for j in range(len(lpu_list) + 5)])
-            _data[i][0] = n.number
-            _data[i][1] = n.name
-            for num, lpu1 in enumerate(lpu_list):
-                for lpu in lpu1:
-                    if (n.mkbFirst <= lpu.mkbExtra) and (n.mkbLast >= lpu.mkbExtra):
-                        _data[i][num + 2] += lpu.ds1count
-                        if num % 3 == 0:
-                            _data[i][len(row) - 3] += lpu.ds1count
-                        elif num % 3 == 1:
-                            _data[i][len(row) - 2] += lpu.ds1count
-                        else:
-                            _data[i][len(row) - 1] += lpu.ds1count
+    :param request:
+    :return: Возвращает на 107 форму
+    """
 
-    return render(request, 'coordination_illness.html')
+    d_reader = DataReader()
+    all_smo = d_reader.load_model_smo_names()
+    all_mo = d_reader.load_model_mo_names()
+    df_blood = d_reader.get_all_cases()
+    df_blood.to_csv('data/all_cases')
+    return render(request, 'coordination_illness.html', {'smo_data' : all_smo,
+                                                         'mo_data'  : all_mo})
 
 def base(request):
     all_smo = Smo_names.objects.using('dictadmin').all();
@@ -217,34 +197,7 @@ def get_data(request):
         load_data(request)
     return _data, lpus
 
-def calculate_date(args):
-    u"""
-    возвращает промежуток дат рождения для запроса
-    :return:
-    """
-    if len(args) > 0:
-        if args[0] =='adult':
-            date_begin = timezone.datetime.now() + relativedelta.relativedelta(years=-60, months=-11, days=-31)
-            date_end = timezone.datetime.now() + relativedelta.relativedelta(years=-18)
-            return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
-                    '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
-        elif args[0] == 'pensioners':
-            date_begin = timezone.now() + relativedelta.relativedelta(years=-170)
-            date_end = timezone.now() + relativedelta.relativedelta(years=-61)
-            return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
-                    '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
-        elif args[0] == 'babies':
-            date_begin = timezone.now() + relativedelta.relativedelta(years=-1)
-            date_end = timezone.now()
-            return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
-                    '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
-        elif args[0] == 'child':
-            date_begin = timezone.now() + relativedelta.relativedelta(years=-17, months=-11, days=-31)
-            date_end = timezone.now() + relativedelta.relativedelta(years=-1)
-            return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
-                    '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
-        else:
-            return ['1000-01-01', '3000-01-01']
+
 
 def data_for_coord_death(request, *args):
     u"""
@@ -696,75 +649,7 @@ def return_data_illness(request, args, smo_list, mo_list):
                             data_for_print[args[0]][smo][mo][j][i] = get_column(_data_coord_illness[args[0]][smo][mo][j][i], _data_coord_illness_prev_year[args[0]][smo][mo][j][i])
     return data_for_print
 
-def copy_data(result, copied, smo_list, mo_list):
-    u"""
-    затычка, чтобы избежать потери данных
-    :param result: структура, которую меняем,
-    :param copied: структура, которую необходимо разбить на части
-    :param smo_list: список запрашиваемых страховых компаний
-    :param mo_list: список запрашиваемых муниципальных организаций
-    :return: dict
-    """
-    for k, v in copied.items():
-        if str(k) in smo_list:
-            result[k] = {}
-            for kk, vv in v.items():
-                if str(kk) in mo_list:
-                    result[k][kk] = []
-                    for num, it in enumerate(vv):
-                        result[k][kk].append([])
-                        for i in it:
-                            result[k][kk][num].append(0)
-    return result
 
-
-def get_column(new, old):
-    u"""Возвращает строковое отображение колонки"""
-    new = int(new)
-    old = int(old)
-    if old != 0:
-        result = 100 * (new - old)/old
-        result = round(result, 2)
-    else:
-        if new != 0:
-            result = 'new'
-        else:
-            result = 0.00
-    return u'{} %'.format(str(result))
-
-def get_daterange(year, month):
-    u"""
-    Возвращает строковое представление дат для выгрузки
-    :return daterange :type list :var ['2019-03-01', '2019-03-31']"""
-    month_endswith = { '01' : '01-31',
-                       '02' : '02-28',
-                       '03' : '03-31',
-                       '04' : '04-30',
-                       '05' : '05-31',
-                       '06' : '06-30',
-                       '07' : '07-31',
-                       '08' : '08-31',
-                       '09' : '09-30',
-                       '10' : '10-31',
-                       '11' : '11-30',
-                       '12' : '12-31'}
-    if is_leap_year(year):
-        month_endswith['02'] = '02-29'
-    if len(str(month)) == 1:
-        month = str(0) + str(month)
-    return [str(year) + '-' + str(month) + '-01', str(year) + '-' + month_endswith[month]]
-
-
-def is_leap_year(year):
-    year = int(year)
-    if year % 400 == 0:
-        return True
-    elif year % 100 == 0:
-        return False
-    elif year % 4 == 0:
-        return True
-    else:
-        return False
 
 def coord_death_urls(request, *args):
     u"""
@@ -777,4 +662,259 @@ def coord_death_urls(request, *args):
         return render(request, 'coordination_death.html', {'data' : _data_coord_death[args[0]]})
 
 
+
+
+class DataReader():
+    u"""
+    Класс для возврата DataFrame объектов
+    с фильтрацией по основным нозологическим формам
+    :return :type pd.DataFrame
+    """
+    def get_blood_illness(self):
+        cases = SLS.objects.select_related('caseZid__zap_id') \
+            .values('caseZid__zap_id__smo_id', 'caseZid__lpu', 'caseZid__stat_or_amb', 'mkbExtra', 'caseZid__dateBeg',
+                    'caseZid__dateEnd', 'caseZid__result',
+                    'caseZid__zap_id__date_birth') \
+            .filter(mkbExtra__gte='I00', mkbExtra__lte='I99')
+        return read_frame(cases)
+
+    def get_newpat_illness(self):
+        cases = SLS.objects.select_related('caseZid__zap_id') \
+            .values('caseZid__zap_id__smo_id', 'caseZid__lpu', 'caseZid__stat_or_amb', 'mkbExtra', 'caseZid__dateBeg',
+                    'caseZid__dateEnd', 'caseZid__result',
+                    'caseZid__zap_id__date_birth') \
+            .filter(mkbExtra__gte='C00', mkbExtra__lte='D48')
+        return read_frame(cases)
+
+    def get_neuron_netw_illness(self):
+        cases = SLS.objects.select_related('caseZid__zap_id') \
+            .values('caseZid__zap_id__smo_id', 'caseZid__lpu', 'caseZid__stat_or_amb', 'mkbExtra', 'caseZid__dateBeg',
+                    'caseZid__dateEnd', 'caseZid__result',
+                    'caseZid__zap_id__date_birth') \
+            .filter(mkbExtra__gte='G00', mkbExtra__lte='G98')
+        return read_frame(cases)
+
+    def get_breath_illness(self):
+        cases = SLS.objects.select_related('caseZid__zap_id') \
+            .values('caseZid__zap_id__smo_id', 'caseZid__lpu', 'caseZid__stat_or_amb', 'mkbExtra', 'caseZid__dateBeg',
+                    'caseZid__dateEnd', 'caseZid__result',
+                    'caseZid__zap_id__date_birth') \
+            .filter(mkbExtra__gte='J00', mkbExtra__lte='J99')
+        return read_frame(cases)
+
+    def get_digestion_illness(self):
+        cases = SLS.objects.select_related('caseZid__zap_id') \
+            .values('caseZid__zap_id__smo_id', 'caseZid__lpu', 'caseZid__stat_or_amb', 'mkbExtra', 'caseZid__dateBeg',
+                    'caseZid__dateEnd', 'caseZid__result',
+                    'caseZid__zap_id__date_birth') \
+            .filter(mkbExtra__gte='K00', mkbExtra__lte='K93')
+        return read_frame(cases)
+
+    def get_all_cases(self):
+        cases = SLS.objects.select_related('caseZid__zap_id') \
+            .values('caseZid__zap_id__smo_id', 'caseZid__lpu',  'caseZid__stat_or_amb', 'mkbExtra', 'caseZid__dateBeg',
+                    'caseZid__dateEnd', 'caseZid__result',
+                            'caseZid__zap_id__date_birth')
+        return read_frame(cases)
+
+    def load_model_smo_names(self):
+        return Smo_names.objects.using('dictadmin').all()
+
+    def load_model_mo_names(self):
+        return Lpu_names.objects.using('dictadmin').all()
+
+    def get_nosologies(self):
+        return Nosologies.objects.all().order_by('id')
+
+
+class Coordination_illness_views():
+
+    def __init__(self):
+        self.dateMonth1 = None # type: int
+        self.dateYear1 = None # type: int
+        self.dateMonth2 = None # type: int
+        self.dateYear2 = None # type: int
+        self.selectedSmo = None # type: list
+        self.selectedMo = None # type: list
+
+        self.nosologies = None # type: django.QuerySet
+        self.query = None # type: pandas.DataFrame
+        self.query_copy = None #type: pandas.DataFrame
+
+    def setup_Settings(self, params):
+
+        self.dateMonth1 = params.get('selected_month_1', None)
+        self.dateYear1 = params.get('selected_year_1', None)
+        self.dateMonth2 = params.get('selected_month_2', None)
+        self.dateYear2 = params.get('selected_year_2', None)
+        self.selectedMo = params.get('selected_mo', None)
+        self.selectedSmo = params.get('selected_smo', None)
+        self.nosologies = DataReader().get_nosologies()
+
+        if self.selectedMo != 'null' and self.selectedSmo != 'null':
+            self.selectedMo = self.selectedMo.split(',')
+            self.selectedMo = [int(val) for val in self.selectedMo]
+            self.selectedSmo = self.selectedSmo.split(',')
+            self.selectedSmo = [int(val) for val in self.selectedSmo]
+        else:
+            self.selectedSmo = None
+            self.selectedMo = None
+
+    def filter_data(self, data_frame, column, cond=None, gt=None, lt=None):
+        u"""
+        Синтаксический сахар для фильтрации DataFrame,
+
+        :param data_frame:
+        :return: slice_data_frame
+        """
+        slice_df = data_frame
+        if cond:
+            if type(cond) == list:
+                slice_df = data_frame[data_frame[column].isin(cond)]
+            else:
+                slice_df = data_frame[data_frame[column] == cond]
+        if gt and lt:
+            slice_df = data_frame[(data_frame[column] >= gt) & (data_frame[column] <= lt)]
+        else:
+            if gt:
+                slice_df = data_frame[data_frame[column] >=  gt]
+            if lt:
+                slice_df = data_frame[data_frame[column] <= lt]
+
+        return slice_df
+
+    def convert_data(self):
+        u"""
+        создает словарь,
+        заполняя его отфильтрованными DataFrame значениями
+
+        :return: illness_data_dict :type dict
+        """
+        illness_data_dict = {}
+        for smo in self.selectedSmo:
+            illness_data_dict[smo] = {}
+            slice = self.filter_data(self.query, 'smo_id', cond=int(smo))
+            for mo in self.selectedMo:
+                illness_data_dict[smo][mo] = []
+                slice = self.filter_data(slice, 'lpu', cond=int(mo))
+                slice_amb = self.filter_data(slice, 'stat_or_amb', cond=3)
+                slice_stat = self.filter_data(slice, 'stat_or_amb', cond=[1,2])
+                slice_statzam = slice[slice.stat_or_amb.isna()]
+                slice_skormp = self.filter_data(slice, 'stat_or_amb', cond=4)
+                sum_amb = 0
+                sum_stat = 0
+                sum_stat_zam = 0
+                sum_skor_mp = 0
+                for number, _obj in enumerate(self.nosologies):
+                    row = [0 for j in range(7)]
+                    row[0] = _obj.number
+                    row[1] = _obj.name
+                    row[2] = (
+                            _obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
+                    count_amb = len(self.filter_data(slice_amb, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                    count_stat = len(self.filter_data(slice_stat, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                    count_stat_zam = len(self.filter_data(slice_statzam, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                    count_skor_mp = len(self.filter_data(slice_skormp, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                    row[3] = count_amb
+                    row[4] = count_stat
+                    row[5] = count_stat_zam
+                    row[6] = count_skor_mp
+                    illness_data_dict[smo][mo].append(row)
+                    sum_amb += count_amb
+                    sum_stat += count_stat
+                    sum_stat_zam += count_stat_zam
+                    sum_skor_mp += count_skor_mp
+                # последняя строка
+                row = [0 for j in range(7)]
+                row[0] = '..'
+                row[1] = 'Итого:'
+                row[2] = '.....'
+                row[3] = sum_amb
+                row[4] = sum_stat
+                row[5] = sum_stat_zam
+                row[6] = sum_skor_mp
+                illness_data_dict[smo][mo].append(row)
+        return illness_data_dict
+
+    def return_data_illness(self, f_dict, s_dict):
+        u"""
+        Функция берет 2 словаря,
+        сравнивает значения в них - пересчитывает их в отдельный словарь, который и уходит в отчет
+        :arg f_dict - данные по заболеваниям за отчетный месяц
+        :arg s_dict - данные по заболеваниям за отчетный месяц в предыдущем календарном году
+
+        :return: data_for_print :type dict
+        """
+
+
+
+        for smo, mo_dict in f_dict.items():
+            if str(smo) in self.selectedSmo or smo in self.selectedSmo:
+                for mo, rows in mo_dict.items():
+                    if str(mo) in self.selectedMo or mo in self.selectedMo:
+                        for j, row in enumerate(rows):
+                            for i in range(3, 7, 1):
+                                f_dict[smo][mo][j][i] = get_column( f_dict[smo][mo][j][i],
+                                                                            s_dict[smo][mo][j][i])
+        return f_dict
+
+    def get_names_list(self):
+        u"""
+        Возвращает список наименований организаций
+
+        :return: names :type list
+        """
+        names = {}
+
+        for smo in self.selectedSmo:
+            names[smo] = Smo_names.objects.using('dictadmin').filter(smo_id=int(smo)).values_list('short_name',
+                                                                                                   flat=True)
+            if len(names[smo]) > 0:
+                names[smo] = names[smo][0]
+            else:
+                names[smo] = u'Неизвестно'
+        for mo in self.selectedMo:
+            names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(mo)).values_list('name_short', flat=True)[0]
+        return names
+
+    def view_coordination_illness(self, request, *args):
+        u"""
+        Конструктор, собирающий все данные, попадающие в отчет
+        :param request:
+        :param args:
+        :return: render
+        """
+        names = None
+        output_data = None
+        if request.method == 'GET':
+            self.setup_Settings(request.GET)
+
+            data = pd.read_csv('data/all_cases', index_col=0, parse_dates=True)
+            data = data.rename(columns={'caseZid__zap_id__smo_id' : 'smo_id',
+                                        'caseZid__lpu' : 'lpu',
+                                        'caseZid__stat_or_amb' : 'stat_or_amb',
+                                        'mkbExtra' : 'mkb',
+                                        'caseZid__dateBeg' : 'begDate',
+                                        'caseZid__dateEnd' : 'endDate',
+                                        'caseZid__result' : 'result',
+                                        'caseZid__zap_id__date_birth' : 'birthDate'})
+            d_reader = DataReader()
+            all_smo = d_reader.load_model_smo_names()
+            all_mo = d_reader.load_model_mo_names()
+            if self.selectedSmo and self.selectedMo:
+                if args:
+                    data = self.filter_data(data, 'birthDate', gt=calculate_date(args)[0], lt=calculate_date(args)[1])
+                names = self.get_names_list()
+                daterange = get_daterange(self.dateYear1, self.dateMonth1)
+                data = self.filter_data(data, 'smo_id', cond = self.selectedSmo)
+                self.query = self.filter_data(data, 'begDate', gt=daterange[0], lt=daterange[1] )
+                first_data_illness = self.convert_data()
+                daterange = get_daterange(self.dateYear2, self.dateMonth2)
+                self.query = self.filter_data(data, 'endDate', gt=daterange[0], lt=daterange[1])
+                second_data_illness = self.convert_data()
+                output_data = self.return_data_illness(first_data_illness, second_data_illness)
+            return render(request, 'coordination_illness.html', {   'smo_data'   : all_smo,
+                                                                'mo_data'    : all_mo,
+                                                                'names_list' : names,
+                                                                'data'       : output_data})
 
