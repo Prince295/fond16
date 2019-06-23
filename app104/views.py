@@ -12,8 +12,9 @@ from dateutil import relativedelta
 from django.contrib.auth import authenticate, login, logout, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
 
-from .views_utils import copy_data, get_daterange, get_column, is_leap_year, calculate_date
-from .models import SLS, Nosologies, Lpu_names, Patients, Z_SLS, Smo_names
+from .views_utils import copy_data, get_daterange, get_column, is_leap_year, \
+    calculate_date, get_data_to_result_header, MKB_CLASS_RANGE, MKB_CLASS_RANGE_ROMAN, roman_to_arabic, arabic_to_str
+from .models import SLS, Nosologies, Mkb, Lpu_names, Patients, Z_SLS, Smo_names
 
 
 global _data, _data_coord_death, _lpu_names, _data_coord_illness, _data_coord_illness_prev_year, data_for_illness_prev_month, _names
@@ -150,24 +151,6 @@ def coordination(request):
     else:
         return render(request, 'mo_views_table.html', {'data': data,
                                                        'lpus': lpus})
-
-def coord_illness(request):
-    u"""
-    Что будет - таблица отчета по заболеваемости
-    :param request:
-    :return:
-    """
-
-    return render(request,'coordination_illness.html')
-
-def coord_death(request):
-    u"""
-    Что будет - таблица отчета по смертности
-    :param request:
-    :return:
-    """
-    return  render(request, 'coordination_death.html')
-
 
 def onload(request):
     return render(request, 'index.html')
@@ -726,9 +709,35 @@ class DataReader():
     def get_nosologies(self):
         return Nosologies.objects.all().order_by('id')
 
+    def get_MKB_classnames(self):
+        all_mkb =  Mkb.objects.all().order_by('diagid').values_list('classid', 'classname')
+        classnames = {}
+        for mkb in all_mkb:
+            classnames[arabic_to_str(roman_to_arabic(mkb[0]))] = mkb[1]
+        return classnames
 
-class Coordination_illness_views():
+    def get_MKB_blocknames(self):
+        classnames = self.get_MKB_classnames()
+        blocknames = {}
+        all_mkb = Mkb.objects.all().order_by('diagid').values_list('classid', 'blockid', 'blockname')
+        counts = {}
+        used_blocks = []
+        for key in MKB_CLASS_RANGE_ROMAN.keys():
+            counts[key] = 1
+        for mkb in all_mkb:
+            blocknames[arabic_to_str(roman_to_arabic(mkb[0]))] = classnames[arabic_to_str(roman_to_arabic(mkb[0]))]
+            if mkb[1] not in used_blocks:
+                blocknames[arabic_to_str(roman_to_arabic(mkb[0])) + '.' + str(counts[mkb[0]])] = (mkb[1], mkb[2])
+                counts[mkb[0]] += 1
+                used_blocks.append(mkb[1])
+        return blocknames
 
+
+
+class CoordinationBase():
+    u"""
+    Базовый класс для построения табличного отчета по координационному совету
+    """
     def __init__(self):
         self.dateMonth1 = None # type: int
         self.dateYear1 = None # type: int
@@ -740,25 +749,6 @@ class Coordination_illness_views():
         self.nosologies = None # type: django.QuerySet
         self.query = None # type: pandas.DataFrame
         self.query_copy = None #type: pandas.DataFrame
-
-    def setup_Settings(self, params):
-
-        self.dateMonth1 = params.get('selected_month_1', None)
-        self.dateYear1 = params.get('selected_year_1', None)
-        self.dateMonth2 = params.get('selected_month_2', None)
-        self.dateYear2 = params.get('selected_year_2', None)
-        self.selectedMo = params.get('selected_mo', None)
-        self.selectedSmo = params.get('selected_smo', None)
-        self.nosologies = DataReader().get_nosologies()
-
-        if self.selectedMo != 'null' and self.selectedSmo != 'null':
-            self.selectedMo = self.selectedMo.split(',')
-            self.selectedMo = [int(val) for val in self.selectedMo]
-            self.selectedSmo = self.selectedSmo.split(',')
-            self.selectedSmo = [int(val) for val in self.selectedSmo]
-        else:
-            self.selectedSmo = None
-            self.selectedMo = None
 
     def filter_data(self, data_frame, column, cond=None, gt=None, lt=None):
         u"""
@@ -783,6 +773,7 @@ class Coordination_illness_views():
 
         return slice_df
 
+
     def convert_data(self):
         u"""
         создает словарь,
@@ -791,39 +782,70 @@ class Coordination_illness_views():
         :return: illness_data_dict :type dict
         """
         illness_data_dict = {}
+        mkb_classlist = DataReader().get_MKB_blocknames()
         for smo in self.selectedSmo:
             illness_data_dict[smo] = {}
             slice = self.filter_data(self.query, 'smo_id', cond=int(smo))
             for mo in self.selectedMo:
                 illness_data_dict[smo][mo] = []
-                slice = self.filter_data(slice, 'lpu', cond=int(mo))
-                slice_amb = self.filter_data(slice, 'stat_or_amb', cond=3)
-                slice_stat = self.filter_data(slice, 'stat_or_amb', cond=[1,2])
-                slice_statzam = slice[slice.stat_or_amb.isna()]
-                slice_skormp = self.filter_data(slice, 'stat_or_amb', cond=4)
+                slice_mo = self.filter_data(slice, 'lpu', cond=int(mo))
+                slice_amb = self.filter_data(slice_mo, 'stat_or_amb', cond=3)
+                slice_stat = self.filter_data(slice_mo, 'stat_or_amb', cond=[1,2])
+                slice_statzam = slice_mo[slice_mo.stat_or_amb.isna()]
+                slice_skormp = self.filter_data(slice_mo, 'stat_or_amb', cond=4)
                 sum_amb = 0
                 sum_stat = 0
                 sum_stat_zam = 0
                 sum_skor_mp = 0
-                for number, _obj in enumerate(self.nosologies):
+                for key,_obj in mkb_classlist.items():
                     row = [0 for j in range(7)]
-                    row[0] = _obj.number
-                    row[1] = _obj.name
+                    row[0] = key
+                    row[1] = _obj if type(_obj) != tuple else _obj[1]
+                    if len(key) <= 2:
+                        mkbFirst = MKB_CLASS_RANGE.get(key, 'A00-A01').split('-')[0]
+                        mkbLast = MKB_CLASS_RANGE.get(key, 'A00-A01').split('-')[1]
+                    else:
+                        if '-' in _obj[0]:
+                            mkbFirst = _obj[0].split('-')[0][1:]
+                            mkbLast = _obj[0].split('-')[1][:-1]
+                        else:
+                            mkbFirst = mkbLast = _obj[0][1:-2]
                     row[2] = (
-                            _obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
-                    count_amb = len(self.filter_data(slice_amb, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
-                    count_stat = len(self.filter_data(slice_stat, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
-                    count_stat_zam = len(self.filter_data(slice_statzam, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
-                    count_skor_mp = len(self.filter_data(slice_skormp, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                            mkbFirst + ' - ' + mkbLast) if mkbFirst != mkbLast else mkbFirst
+                    count_amb = len(self.filter_data(slice_amb, 'mkb', gt=mkbFirst, lt=mkbLast))
+                    count_stat = len(self.filter_data(slice_stat, 'mkb', gt=mkbFirst, lt=mkbLast))
+                    count_stat_zam = len(self.filter_data(slice_statzam, 'mkb', gt=mkbFirst, lt=mkbLast))
+                    count_skor_mp = len(self.filter_data(slice_skormp, 'mkb', gt=mkbFirst, lt=mkbLast))
                     row[3] = count_amb
                     row[4] = count_stat
                     row[5] = count_stat_zam
                     row[6] = count_skor_mp
                     illness_data_dict[smo][mo].append(row)
-                    sum_amb += count_amb
-                    sum_stat += count_stat
-                    sum_stat_zam += count_stat_zam
-                    sum_skor_mp += count_skor_mp
+                    if len(row[0]) <= 2:
+                        sum_amb += count_amb
+                        sum_stat += count_stat
+                        sum_stat_zam += count_stat_zam
+                        sum_skor_mp += count_skor_mp
+                # for number, _obj in enumerate(self.nosologies):
+                #     row = [0 for j in range(7)]
+                #     row[0] = _obj.number
+                #     row[1] = _obj.name
+                #     row[2] = (
+                #             _obj.mkbFirst + ' - ' + _obj.mkbLast) if _obj.mkbFirst != _obj.mkbLast else _obj.mkbFirst
+                #     count_amb = len(self.filter_data(slice_amb, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                #     count_stat = len(self.filter_data(slice_stat, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                #     count_stat_zam = len(self.filter_data(slice_statzam, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                #     count_skor_mp = len(self.filter_data(slice_skormp, 'mkb', gt=_obj.mkbFirst, lt=_obj.mkbLast))
+                #     row[3] = count_amb
+                #     row[4] = count_stat
+                #     row[5] = count_stat_zam
+                #     row[6] = count_skor_mp
+                #     illness_data_dict[smo][mo].append(row)
+                #     if len(row[0]) <= 2:
+                #         sum_amb += count_amb
+                #         sum_stat += count_stat
+                #         sum_stat_zam += count_stat_zam
+                #         sum_skor_mp += count_skor_mp
                 # последняя строка
                 row = [0 for j in range(7)]
                 row[0] = '..'
@@ -836,7 +858,26 @@ class Coordination_illness_views():
                 illness_data_dict[smo][mo].append(row)
         return illness_data_dict
 
-    def return_data_illness(self, f_dict, s_dict):
+    def setup_Settings(self, params):
+
+        self.dateMonth1 = params.get('selected_month_1', None)
+        self.dateYear1 = params.get('selected_year_1', None)
+        self.dateMonth2 = params.get('selected_month_2', None)
+        self.dateYear2 = params.get('selected_year_2', None)
+        self.selectedMo = params.get('selected_mo', None)
+        self.selectedSmo = params.get('selected_smo', None)
+        self.nosologies = DataReader().get_nosologies()
+        not_vals = ['null', '']
+        if self.selectedMo not in not_vals and self.selectedSmo not in not_vals:
+            self.selectedMo = self.selectedMo.split(',')
+            self.selectedMo = [int(val) for val in self.selectedMo]
+            self.selectedSmo = self.selectedSmo.split(',')
+            self.selectedSmo = [int(val) for val in self.selectedSmo]
+        else:
+            self.selectedSmo = None
+            self.selectedMo = None
+
+    def return_data(self, f_dict, s_dict):
         u"""
         Функция берет 2 словаря,
         сравнивает значения в них - пересчитывает их в отдельный словарь, который и уходит в отчет
@@ -845,9 +886,6 @@ class Coordination_illness_views():
 
         :return: data_for_print :type dict
         """
-
-
-
         for smo, mo_dict in f_dict.items():
             if str(smo) in self.selectedSmo or smo in self.selectedSmo:
                 for mo, rows in mo_dict.items():
@@ -876,6 +914,24 @@ class Coordination_illness_views():
         for mo in self.selectedMo:
             names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(mo)).values_list('name_short', flat=True)[0]
         return names
+
+class Coordination_illness_views(CoordinationBase):
+
+    def __init__(self):
+        super(CoordinationBase, self).__init__()
+
+    def view_empty_coordination_illness(self, request):
+        u"""
+        Пустая таблица отчета по заболеваемости
+        :param request:
+        :return:
+        """
+
+        d_reader = DataReader()
+        all_smo = d_reader.load_model_smo_names()
+        all_mo = d_reader.load_model_mo_names()
+        return render(request, 'coordination_illness.html', {'smo_data': all_smo,
+                                                             'mo_data': all_mo})
 
     def view_coordination_illness(self, request, *args):
         u"""
@@ -910,11 +966,75 @@ class Coordination_illness_views():
                 self.query = self.filter_data(data, 'begDate', gt=daterange[0], lt=daterange[1] )
                 first_data_illness = self.convert_data()
                 daterange = get_daterange(self.dateYear2, self.dateMonth2)
-                self.query = self.filter_data(data, 'endDate', gt=daterange[0], lt=daterange[1])
+                self.query = self.filter_data(data, 'begDate', gt=daterange[0], lt=daterange[1])
                 second_data_illness = self.convert_data()
-                output_data = self.return_data_illness(first_data_illness, second_data_illness)
-            return render(request, 'coordination_illness.html', {   'smo_data'   : all_smo,
-                                                                'mo_data'    : all_mo,
-                                                                'names_list' : names,
-                                                                'data'       : output_data})
+                output_data = self.return_data(first_data_illness, second_data_illness)
+            return render(request, 'coordination_illness.html', {'smo_data'   : all_smo,
+                                                                 'mo_data'    : all_mo,
+                                                                 'names_list' : names,
+                                                                 'data'       : output_data,
+                                                                'month_year_1': get_data_to_result_header(self.dateMonth1, self.dateYear1),
+                                                                'month_year_2': get_data_to_result_header(self.dateMonth2, self.dateYear2)})
 
+
+class Coordination_death_views(CoordinationBase):
+    def __init__(self):
+        super(CoordinationBase, self).__init__()
+        self.death_list = [105, 106, 205, 206, 313, 405, 406, 411]
+
+    def view_empty_coordination_death(self, request):
+        u"""
+        Пустая таблица отчета по смертности
+        :param request:
+        :return:
+        """
+
+        d_reader = DataReader()
+        all_smo = d_reader.load_model_smo_names()
+        all_mo = d_reader.load_model_mo_names()
+        return render(request, 'coordination_death.html', {'smo_data': all_smo,
+                                                             'mo_data': all_mo})
+
+    def view_coordination_death(self, request, *args):
+        u"""
+        Конструктор, собирающий все данные, попадающие в отчет
+        :param request:
+        :param args:
+        :return: render
+        """
+        names = None
+        output_data = None
+        if request.method == 'GET':
+            self.setup_Settings(request.GET)
+            data = pd.read_csv('data/all_cases', index_col=0, parse_dates=True)
+            data = data.rename(columns={'caseZid__zap_id__smo_id' : 'smo_id',
+                                        'caseZid__lpu' : 'lpu',
+                                        'caseZid__stat_or_amb' : 'stat_or_amb',
+                                        'mkbExtra' : 'mkb',
+                                        'caseZid__dateBeg' : 'begDate',
+                                        'caseZid__dateEnd' : 'endDate',
+                                        'caseZid__result' : 'result',
+                                        'caseZid__zap_id__date_birth' : 'birthDate'})
+            d_reader = DataReader()
+            all_smo = d_reader.load_model_smo_names()
+            all_mo = d_reader.load_model_mo_names()
+            if self.selectedSmo and self.selectedMo:
+                if args:
+                    data = self.filter_data(data, 'birthDate', gt=calculate_date(args)[0], lt=calculate_date(args)[1])
+                names = self.get_names_list()
+                daterange = get_daterange(self.dateYear1, self.dateMonth1)
+                data = self.filter_data(data, 'smo_id', cond = self.selectedSmo)
+                self.query = self.filter_data(data, 'endDate', gt=daterange[0], lt=daterange[1] )
+                self.query = self.filter_data(self.query, 'result', cond=self.death_list)
+                first_data_death = self.convert_data()
+                daterange = get_daterange(self.dateYear2, self.dateMonth2)
+                self.query = self.filter_data(data, 'endDate', gt=daterange[0], lt=daterange[1])
+                self.query = self.filter_data(self.query, 'result', cond=self.death_list)
+                second_data_death = self.convert_data( )
+                output_data = self.return_data(first_data_death, second_data_death)
+            return render(request, 'coordination_death.html', {   'smo_data'   : all_smo,
+                                                                'mo_data'      : all_mo,
+                                                                'names_list'   : names,
+                                                                'data'         : output_data,
+                                                                'month_year_1' : get_data_to_result_header(self.dateMonth1, self.dateYear1),
+                                                                'month_year_2' : get_data_to_result_header(self.dateMonth2, self.dateYear2)})

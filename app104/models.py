@@ -104,6 +104,19 @@ class Nosologies(models.Model):
     class Meta:
         db_table='"NSLGS"'
 
+class Mkb(models.Model):
+    id = models.IntegerField(primary_key=True)
+    classid = models.CharField(max_length=8)
+    classname = models.CharField(max_length=350)
+    blockid = models.CharField(max_length=9)
+    blockname = models.CharField(max_length=360)
+    diagid = models.CharField(max_length=8)
+    diagname = models.CharField(max_length=360)
+
+    class Meta:
+        db_table = 'MKB'
+
+
 
 
 
