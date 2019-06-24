@@ -66,6 +66,49 @@ def logout_func(request):
     return render(request, 'coordination_illness.html')
 
 
+def load_data_old(request):
+    if not _data:
+        daterange = ["2019-03-01", "2019-03-31"]
+        nosologies = Nosologies.objects.all().order_by('id')
+        lpu_list = []
+        lpus = {1: 47007406,
+                2: 470067,
+                3: 470003,
+                4: 470006}
+
+        for k, v in lpus.items():
+            if len(str(v)) > 7:
+                lpus[k] = str(v)[:6]
+            else:
+                lpus[k] = str(v)
+            try:
+                _lpu_names[lpus[k]] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(lpus[k])).values_list('name_short',flat=True)[0]
+            except:
+                _lpu_names[lpus[k]] = lpus[k]
+        for k, v in lpus.items():
+            lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange, lpuId__startswith=v).annotate(ds1count=Count(SLS.mkbExtra)))
+            lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange, lpuId__startswith=v, caseZid__stat_or_amb__in=[1,2]).annotate(
+                ds1count=Count(SLS.mkbExtra)))
+            lpu_list.append(SLS.objects.select_related('caseZid').filter(dateBeg__range=daterange).filter(lpuId__startswith=v, caseZid__stat_or_amb=3).annotate(
+                    ds1count=Count(SLS.mkbExtra)))
+        row = [0 for j in range(len(lpu_list) + 5)]
+        for i, n in enumerate(nosologies):
+            _data.append([0 for j in range(len(lpu_list) + 5)])
+            _data[i][0] = n.number
+            _data[i][1] = n.name
+            for num, lpu1 in enumerate(lpu_list):
+                for lpu in lpu1:
+                    if (n.mkbFirst <= lpu.mkbExtra) and (n.mkbLast >= lpu.mkbExtra):
+                        _data[i][num + 2] += lpu.ds1count
+                        if num % 3 == 0:
+                            _data[i][len(row) - 3] += lpu.ds1count
+                        elif num % 3 == 1:
+                            _data[i][len(row) - 2] += lpu.ds1count
+                        else:
+                            _data[i][len(row) - 1] += lpu.ds1count
+
+    return render(request, 'coordination_illness.html')
+
 def load_data(request):
     u"""
     Выгрузка всех случаев в сводную таблицу
@@ -177,7 +220,7 @@ def get_data(request):
     if _data:
         return _data, lpus
     else:
-        load_data(request)
+        load_data_old(request)
     return _data, lpus
 
 
