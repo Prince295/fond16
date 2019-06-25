@@ -553,6 +553,22 @@ $('#coord_d_10').click(function () {
     '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
     '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
 });
+$('#coord_d_runner').click(function () {
+    let smo_to_server = '';
+
+    let mo_to_server = '';
+
+    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
+    var selected_year_2 = selected_year_1
+    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
+    var selected_month_2 = convertMonth(String(Number(selected_month_1) - 1));
+    this.href = '/coordination_illness_rebase?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
+    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
+    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
+});
+
+
+
 $('.showelembtn').click(function () {
     this.style.display = 'none';
     var _cutId = this.id.split('hidden')[0];
