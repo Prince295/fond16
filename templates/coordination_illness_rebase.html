@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block main %}
+
+    <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px;"
+         xmlns="http://www.w3.org/1999/html">
+                    <h2 style="font-family: 'Calibri Light'">Координационный совет. Заболеваемость</h2><br>
+                    <h3 style="font-family: 'Calibri Light'">Выгрузка данных за
+                        <form class="body-selector selector-form" id="select_month_1">
+                          <input class="chosen-value" type="text" value="" placeholder="Январь">
+                          <ul class="value-list" >
+                            <li class="li-selector" value="1">Январь</li>
+                            <li class="li-selector" value="2">Февраль</li>
+                            <li class='li-selector' value="3">Март</li>
+                            <li class='li-selector' value="4">Апрель</li>
+                            <li class='li-selector' value="5">Май</li>
+                            <li class='li-selector' value="6">Июнь</li>
+                            <li class='li-selector' value="7">Июль</li>
+                            <li class='li-selector' value="8">Август</li>
+                            <li class='li-selector' value="9">Сентябрь</li>
+                            <li class='li-selector' value="10">Октябрь</li>
+                            <li class='li-selector' value="11">Ноябрь</li>
+                            <li class='li-selector' value="12">Декабрь</li>
+                          </ul>
+                        </form>
+                        <form class="body-selector selector-form" id="select_year_1">
+                        <input class="chosen-value" type="text" value="" placeholder="2019">
+                          <ul class="value-list" >
+                            {% for year in smo_data|get_years %}
+                                <li class="li-selector" value="{{ year }}">{{ year }}</li>
+                            {% endfor %}
+                          </ul>
+                        </form> года.</h3><br>
+    </div>
+    <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px; margin-bottom: 20px">
+
+                    <a id='coord_d_runner' class="btn btn-cta" style="target: '#coord_d_5'; font-family: 'Calibri Light'; font-weight: bold; color: #00b8d4; " >Выгрузить</a>
+
+                </div>
+    <div class="gtco-loader"></div>
+
+
+                <div class="row">
+
+                    <table id="table_illness" class="table-striped table-death"; style="display: table; margin-left: 2%; margin-right: 2%; margin-bottom: 30px; font-family: 'Calibri Light'">
+
+                        <tr style="display: table-row">
+                            <th style="display: table-cell; width: 10%" rowspan="2" class="table-death-head" id="smo_header">Страховая медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell; width: 15%" rowspan="2" class="table-death-head" id="mo_header">Медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell; width: 25%" colspan="1" rowspan="2" class="table-death-head" id="illness_header">Заболевания<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell; width: 25%" colspan="4" class="table-death-head" id="all_cases">{{ date_to_show.0 }}<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell; width: 25%" colspan="4" class="table-death-head" id="all_cases_second">{{ date_to_show.1 }}<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+
+                        </tr>
+                        <tr style="display: table-row">
+                            <th style="display: table-cell" class="table-death-head" id="amp_header">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_header">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="statzam_header">Стационарно-замещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_out_header">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="amp_header_second">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_header_second">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="statzam_header_second">Стационарно-замещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_out_header_second">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                        </tr>
+                        {% for smo, mo_dictionary in first_period.items %}
+                            {% for mo, values_tuple in mo_dictionary.items %}
+                                {% for item, values in values_tuple.items %}
+                                    <tr class="{{ smo }} {{ mo }}" id="{{ smo }} {{ mo }} {{ forloop.counter }}row">
+                                        {% if forloop.parentloop.first and forloop.first %}
+                                            <td style="display: table-cell" class="smo_header " id="{{ smo }}" rowspan="{{ smo_column_length }}">
+                                                {{ names|get_name_by_id:smo }}<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></td>
+                                        {% endif %}
+                                        {% if forloop.first %}
+                                            <td class="mo_header {{ smo }}" id="{{ smo }} {{ mo }}"
+                                                {% if not forloop.parentloop.last %}
+                                                    rowspan="1"
+                                                {% endif %}>{{ names|get_name_by_id:mo }}<a class="btngetclasses"><i class="icon icon-circle-plus"></i></a></td>
+                                        {% endif %}
+                                        <td class="illness_header {{ smo }} {{ mo }}">{{ item }}<a class="btngetblocks"><i class="icon icon-circle-plus"></i></a></td>
+                                        <td class="diagonal-line amp_header {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.0 }}</span></div>
+                                            <div><span>{{ values.4 }}</span></div>
+                                        </td>
+                                        <td class="diagonal-line smp_header {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.1 }}</span></div>
+                                            <div><span>{{ values.5 }}</span></div>
+                                        </td>
+                                        <td class="diagonal-line statzam_header {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.2 }}</span></div>
+                                            <div><span>{{ values.6 }}</span></div>
+                                        </td>
+                                        <td class="diagonal-line skormp_header {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.3 }}</span></div>
+                                            <div><span>{{ values.7 }}</span></div>
+                                        </td>
+                                        <td class="diagonal-line amp_header_second {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.0 }}</span></div>
+                                            <div><span>{{ values.8 }}</span></div>
+                                        </td>
+                                        <td class="diagonal-line smp_header_second {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.1 }}</span></div>
+                                            <div><span>{{ values.9 }}</span></div>
+                                        </td>
+                                        <td class="diagonal-line statzam_header_second {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.2 }}</span></div>
+                                            <div><span>{{ values.10 }}</span></div>
+                                        </td>
+                                        <td class="diagonal-line skormp_header_second {{ smo }} {{ mo }}">
+                                            <div><span>{{ values.3 }}</span></div>
+                                            <div><span>{{ values.11 }}</span></div>
+                                        </td>
+{#                                        {%  for val in values %}#}
+{#                                            {% if forloop.counter0 == 0 %}#}
+{#                                                <td class="amp_header {{ smo }} {{ mo }}">{{ val }}</td>#}
+{#                                            {% endif %}#}
+{#                                            {% if forloop.counter0 == 1 %}#}
+{#                                                <td class="smp_header {{ smo }} {{ mo }}">{{ val }}</td>#}
+{#                                            {% endif %}#}
+{#                                            {% if forloop.counter0 == 2 %}#}
+{#                                                <td class="statzam_header {{ smo }} {{ mo }}">{{ val}}</td>#}
+{#                                            {% endif %}#}
+{#                                            {% if forloop.counter0 == 3 %}#}
+{#                                                <td class="smp_out_header {{ smo }} {{ mo }}">{{ val }}</td>#}
+{#                                            {% endif %}#}
+{#                                            {% if forloop.counter0 == 4 %}#}
+{#                                                <td class="amp_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
+{#                                            {% endif %}#}
+{#                                            {% if forloop.counter0 == 5 %}#}
+{#                                                <td class="smp_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
+{#                                            {% endif %}#}
+{#                                            {% if forloop.counter0 == 6 %}#}
+{#                                                <td class="statzam_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
+{#                                            {% endif %}#}
+{#                                            {% if forloop.counter0 == 7 %}#}
+{#                                                <td class="smp_out_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
+{#                                            {% endif %}#}
+{#                                        {% endfor %}#}
+
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+
+                    </table>
+                </div>
+                <div class="col-md-8 col-md-offset-4 text-right" style="margin-top: -20px">
+                    <input type="checkbox" class="checkbox-inline" id="colorDiff">
+                    <a style="text-align-all: right; margin-top: 50px; color: #0b0b0b">Подсветить изменения</a><br>
+                    <a style="text-align-all: right; margin-top: 50px; color: #e94320">Красным подсвечена положительная динамика заболеваемости</a><br>
+                    <a style="text-align-all: right; margin-top: 50px; color: #00ffa3">Зеленым подсвечена отрицательная динамика заболеваемости</a><br>
+                    <a style="text-align-all: right; margin-top: 50px">Примечание: запись new означает, что случай заболевания не наблюдался в прошлом месяце</a>
+                </div>
+                <div id='hiddenColumns' class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px">
+                <h3>Скрытые элементы (восстановить по нажатию)</h3>
+
+                </div>
+
+{% endblock main %}

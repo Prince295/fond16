@@ -1,4 +1,9 @@
 import pandas as pd
+import pickle
+import os
+import copy
+import json
+
 from django_pandas.managers import DataFrameManager
 from django_pandas.io import read_frame
 
@@ -13,7 +18,8 @@ from django.contrib.auth import authenticate, login, logout, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
 
 from .views_utils import copy_data, get_daterange, get_column, is_leap_year, \
-    calculate_date, get_data_to_result_header, MKB_CLASS_RANGE, MKB_CLASS_RANGE_ROMAN, roman_to_arabic, arabic_to_str
+    calculate_date, get_data_to_result_header, MKB_CLASS_RANGE, MKB_CLASS_RANGE_ROMAN, \
+    roman_to_arabic, arabic_to_str, get_daterange_prev_period, get_date_to_show
 from .models import SLS, Nosologies, Mkb, Lpu_names, Patients, Z_SLS, Smo_names
 
 
@@ -131,7 +137,7 @@ def load_data(request):
 def base(request):
     all_smo = Smo_names.objects.using('dictadmin').all();
     all_mo = Lpu_names.objects.using('dictadmin').all();
-    return render(request, 'coordination_illness.html', {'smo_data' : all_smo,
+    return render(request, 'coordination_illness_rebase.html', {'smo_data' : all_smo,
                                                          'mo_data'  : all_mo  })
 
 
@@ -775,6 +781,10 @@ class DataReader():
                 used_blocks.append(mkb[1])
         return blocknames
 
+    def get_all_smo_data(self):
+        classnames = self.get_MKB_classnames()
+        smo_objects = self.load_model_smo_names().values('smo_id', 'short_name')
+        mo_objects = self.load_model_mo_names().values('lpu_id', 'name_short')
 
 
 class CoordinationBase():
@@ -789,9 +799,20 @@ class CoordinationBase():
         self.selectedSmo = None # type: list
         self.selectedMo = None # type: list
 
+        self.loadedData = None
+        self.loadedData_month = None
+        self.loadedData_year = None
         self.nosologies = None # type: django.QuerySet
         self.query = None # type: pandas.DataFrame
         self.query_copy = None #type: pandas.DataFrame
+
+
+    def get_loaded_data_month(self):
+        return self.loadedData_month
+
+    def get_loaded_data_year(self):
+        return self.loadedData_year
+
 
     def filter_data(self, data_frame, column, cond=None, gt=None, lt=None):
         u"""
@@ -816,6 +837,364 @@ class CoordinationBase():
 
         return slice_df
 
+
+    def get_all_smo_data(self, current_result = None ):
+        u"""
+        заполняет классами нозологий
+        для всех смо для всех мо
+        :param current_result - уже имеющийся словарь по нозологиям, в который добавляются сравниваемые значения
+        :return:
+        """
+        classnames = DataReader().get_MKB_classnames()
+        smo_objects = DataReader().load_model_smo_names().values('smo_id', 'short_name')
+        mo_objects = DataReader().load_model_mo_names().values('lpu_id', 'name_short')
+        slice_amb = self.filter_data(self.query, 'stat_or_amb', cond=3)
+        slice_stat = self.filter_data(self.query, 'stat_or_amb', cond=[1, 2])
+        slice_statzam = self.query[self.query.stat_or_amb.isna()]
+        slice_skormp = self.filter_data(self.query, 'stat_or_amb', cond=4)
+        if not current_result: result_data = {}
+        for smo in smo_objects:
+            smo_slice = self.filter_data(self.query, 'smo_id', cond = smo['smo_id'])
+            smo_slice_amb = self.filter_data(slice_amb, 'smo_id', cond = smo['smo_id'])
+            smo_slice_stat = self.filter_data(slice_stat, 'smo_id', cond= smo['smo_id'])
+            smo_slice_statzam = self.filter_data(slice_statzam, 'smo_id', cond=smo['smo_id'])
+            smo_slice_skormp = self.filter_data(slice_skormp, 'smo_id', cond = smo['smo_id'])
+            smo_sum = len(smo_slice)
+            smo_sum_amb = len(smo_slice_amb)
+            smo_sum_stat = len(smo_slice_stat)
+            smo_sum_statzam = len(smo_slice_statzam)
+            smo_sum_skormp = len (smo_slice_skormp)
+            _smo = smo['smo_id']
+            if not current_result: result_data[_smo] =  {}
+            for mo in mo_objects:
+                mo_slice = self.filter_data(smo_slice, 'lpu', cond=mo['lpu_id'])
+                mo_slice_amb = self.filter_data(smo_slice_amb, 'lpu', cond=mo['lpu_id'])
+                mo_slice_stat = self.filter_data(smo_slice_stat, 'lpu', cond=mo['lpu_id'])
+                mo_slice_statzam = self.filter_data(smo_slice_statzam, 'lpu', cond=mo['lpu_id'])
+                mo_slice_skormp = self.filter_data(smo_slice_skormp, 'lpu', cond=mo['lpu_id'])
+                mo_sum = len(mo_slice)
+                mo_sum_amb = len(mo_slice_amb)
+                mo_sum_stat = len(mo_slice_stat)
+                mo_sum_statzam = len(mo_slice_statzam)
+                mo_sum_skormp = len(mo_slice_skormp)
+                _mo = mo['lpu_id']
+                if not current_result:
+                    result_data[_smo][_mo] = {
+                        '01'+classnames['01']+u'(A00-B99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='A00', lt='B99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='A00', lt='B99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='A00', lt='B99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='A00', lt='B99'))],
+                        '02'+classnames['02']+u'(C00-D48)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='C00', lt='D48')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='C00', lt='D48')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='C00', lt='D48')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='C00', lt='D48'))],
+                        '03'+classnames['03']+u'(D50-D99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='D50', lt='D99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='D50', lt='D99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='D50', lt='D99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='D50', lt='D99'))],
+                        '04'+classnames['04']+u'(E00-E99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='E00', lt='E99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='E00', lt='E99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='E00', lt='E99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='E00', lt='E99'))],
+                        '05'+classnames['05']+u'(F00-F99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='F00', lt='F99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='F00', lt='F99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='F00', lt='F99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='F00', lt='F99'))],
+                        '06'+classnames['06']+u'(G00-G99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='G00', lt='G99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='G00', lt='G99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='G00', lt='G99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='G00', lt='G99'))],
+                        '07'+classnames['07']+u'(H00-H59)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='H00', lt='H59')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='H00', lt='H59')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='H00', lt='H59')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='H00', lt='H59'))],
+                        '08'+classnames['08']+u'(H60-H95)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='H60', lt='H95')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='H60', lt='H95')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='H60', lt='H95')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='H60', lt='H95'))],
+                        '09'+classnames['09']+u'(I00-I99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='I00', lt='I99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='I00', lt='I99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='I00', lt='I99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='I00', lt='I99'))],
+                        '10'+classnames['10']+u'(J00-J99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='J00', lt='J99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='J00', lt='J99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='J00', lt='J99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='J00', lt='J99'))],
+                        '11'+classnames['11']+u'(K00-K93)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='K00', lt='K93')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='K00', lt='K93')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='K00', lt='K93')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='K00', lt='K93'))],
+                        '12'+classnames['12']+u'(L00-L99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='L00', lt='L99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='L00', lt='L99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='L00', lt='L99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='L00', lt='L99'))],
+                        '13'+classnames['13']+u'(M00-M99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='M00', lt='M99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='M00', lt='M99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='M00', lt='M99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='M00', lt='M99'))],
+                        '14'+classnames['14']+u'(N00-N99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='N00', lt='N99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='N00', lt='N99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='N00', lt='N99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='N00', lt='N99'))],
+                        '15'+classnames['15']+u'(O00-O99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='O00', lt='O99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='O00', lt='O99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='O00', lt='O99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='O00', lt='O99'))],
+                        '16'+classnames['16']+u'(P00-P96)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='P00', lt='P96')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='P00', lt='P96')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='P00', lt='P96')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='P00', lt='P96'))],
+                        '17'+classnames['17']+u'(Q00-Q99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='Q00', lt='Q99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='Q00', lt='Q99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='Q00', lt='Q99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='Q00', lt='Q99'))],
+                        '18'+classnames['18']+u'(R00-R99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='R00', lt='R99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='R00', lt='R99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='R00', lt='R99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='R00', lt='R99'))],
+                        '19'+classnames['19']+u'(S00-T98)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='S00', lt='T98')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='S00', lt='T98')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='S00', lt='T98')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='S00', lt='T98'))],
+                        '20'+classnames['20']+u'(V01-Y98)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='V01', lt='Y98')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='V01', lt='Y98')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='V01', lt='Y98')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='V01', lt='Y98'))],
+                        '21'+classnames['21']+u'(Z00-Z99)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='Z00', lt='Z99')),
+                                                             len(self.filter_data(mo_slice_stat, 'mkb', gt='Z00', lt='Z99')),
+                                                             len(self.filter_data(mo_slice_statzam, 'mkb', gt='Z00', lt='Z99')),
+                                                             len(self.filter_data(mo_slice_skormp, 'mkb', gt='Z00', lt='Z99'))],
+                        # '22'+classnames['22']+u'(U00-U85)': [len(self.filter_data(mo_slice_amb, 'mkb', gt='U00', lt='U85')),
+                        #                                      len(self.filter_data(mo_slice_stat, 'mkb', gt='U00', lt='U85')),
+                        #                                      len(self.filter_data(mo_slice_statzam, 'mkb', gt='U00', lt='U85')),
+                        #                                      len(self.filter_data(mo_slice_skormp, 'mkb', gt='U00', lt='U85')))
+                        }
+                    result_data[_smo][_mo]['Итого'] = [mo_sum_amb, mo_sum_stat, mo_sum_statzam, mo_sum_skormp]
+                else:
+                    current_result[_smo][_mo]['01'+classnames['01']+u'(A00-B99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='A00', lt='B99')))
+                    current_result[_smo][_mo]['01' + classnames['01'] + u'(A00-B99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='A00', lt='B99')))
+                    current_result[_smo][_mo]['01' + classnames['01'] + u'(A00-B99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='A00', lt='B99')))
+                    current_result[_smo][_mo]['01' + classnames['01'] + u'(A00-B99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='A00', lt='B99')))
+                    current_result[_smo][_mo]['02' + classnames['02'] + u'(C00-D48)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='C00', lt='D48')))
+                    current_result[_smo][_mo]['02' + classnames['02'] + u'(C00-D48)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='C00', lt='D48')))
+                    current_result[_smo][_mo]['02' + classnames['02'] + u'(C00-D48)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='C00', lt='D48')))
+                    current_result[_smo][_mo]['02' + classnames['02'] + u'(C00-D48)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='C00', lt='D48')))
+                    current_result[_smo][_mo]['03' + classnames['03'] + u'(D50-D99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='D50', lt='D99')))
+                    current_result[_smo][_mo]['03' + classnames['03'] + u'(D50-D99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='D50', lt='D99')))
+                    current_result[_smo][_mo]['03' + classnames['03'] + u'(D50-D99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='D50', lt='D99')))
+                    current_result[_smo][_mo]['03' + classnames['03'] + u'(D50-D99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='D50', lt='D99')))
+                    current_result[_smo][_mo]['04' + classnames['04'] + u'(E00-E99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='E00', lt='E99')))
+                    current_result[_smo][_mo]['04' + classnames['04'] + u'(E00-E99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='E00', lt='E99')))
+                    current_result[_smo][_mo]['04' + classnames['04'] + u'(E00-E99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='E00', lt='E99')))
+                    current_result[_smo][_mo]['04' + classnames['04'] + u'(E00-E99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='E00', lt='E99')))
+                    current_result[_smo][_mo]['05' + classnames['05'] + u'(F00-F99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='F00', lt='F99')))
+                    current_result[_smo][_mo]['05' + classnames['05'] + u'(F00-F99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='F00', lt='F99')))
+                    current_result[_smo][_mo]['05' + classnames['05'] + u'(F00-F99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='F00', lt='F99')))
+                    current_result[_smo][_mo]['05' + classnames['05'] + u'(F00-F99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='F00', lt='F99')))
+                    current_result[_smo][_mo]['06' + classnames['06'] + u'(G00-G99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='G00', lt='G99')))
+                    current_result[_smo][_mo]['06' + classnames['06'] + u'(G00-G99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='G00', lt='G99')))
+                    current_result[_smo][_mo]['06' + classnames['06'] + u'(G00-G99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='G00', lt='G99')))
+                    current_result[_smo][_mo]['06' + classnames['06'] + u'(G00-G99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='G00', lt='G99')))
+                    current_result[_smo][_mo]['07' + classnames['07'] + u'(H00-H59)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='H00', lt='H59')))
+                    current_result[_smo][_mo]['07' + classnames['07'] + u'(H00-H59)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='H00', lt='H59')))
+                    current_result[_smo][_mo]['07' + classnames['07'] + u'(H00-H59)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='H00', lt='H59')))
+                    current_result[_smo][_mo]['07' + classnames['07'] + u'(H00-H59)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='H00', lt='H59')))
+                    current_result[_smo][_mo]['08' + classnames['08'] + u'(H60-H95)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='H60', lt='H95')))
+                    current_result[_smo][_mo]['08' + classnames['08'] + u'(H60-H95)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='H60', lt='H95')))
+                    current_result[_smo][_mo]['08' + classnames['08'] + u'(H60-H95)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='H60', lt='H95')))
+                    current_result[_smo][_mo]['08' + classnames['08'] + u'(H60-H95)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='H60', lt='H95')))
+                    current_result[_smo][_mo]['09' + classnames['09'] + u'(I00-I99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='I00', lt='I99')))
+                    current_result[_smo][_mo]['09' + classnames['09'] + u'(I00-I99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='I00', lt='I99')))
+                    current_result[_smo][_mo]['09' + classnames['09'] + u'(I00-I99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='I00', lt='I99')))
+                    current_result[_smo][_mo]['09' + classnames['09'] + u'(I00-I99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='I00', lt='I99')))
+                    current_result[_smo][_mo]['10' + classnames['10'] + u'(J00-J99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='J00', lt='J99')))
+                    current_result[_smo][_mo]['10' + classnames['10'] + u'(J00-J99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='J00', lt='J99')))
+                    current_result[_smo][_mo]['10' + classnames['10'] + u'(J00-J99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='J00', lt='J99')))
+                    current_result[_smo][_mo]['10' + classnames['10'] + u'(J00-J99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='J00', lt='J99')))
+                    current_result[_smo][_mo]['11' + classnames['11'] + u'(K00-K93)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='K00', lt='K93')))
+                    current_result[_smo][_mo]['11' + classnames['11'] + u'(K00-K93)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='K00', lt='K93')))
+                    current_result[_smo][_mo]['11' + classnames['11'] + u'(K00-K93)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='K00', lt='K93')))
+                    current_result[_smo][_mo]['11' + classnames['11'] + u'(K00-K93)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='K00', lt='K93')))
+                    current_result[_smo][_mo]['12' + classnames['12'] + u'(L00-L99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='L00', lt='L99')))
+                    current_result[_smo][_mo]['12' + classnames['12'] + u'(L00-L99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='L00', lt='L99')))
+                    current_result[_smo][_mo]['12' + classnames['12'] + u'(L00-L99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='L00', lt='L99')))
+                    current_result[_smo][_mo]['12' + classnames['12'] + u'(L00-L99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='L00', lt='L99')))
+                    current_result[_smo][_mo]['13' + classnames['13'] + u'(M00-M99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='M00', lt='M99')))
+                    current_result[_smo][_mo]['13' + classnames['13'] + u'(M00-M99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='M00', lt='M99')))
+                    current_result[_smo][_mo]['13' + classnames['13'] + u'(M00-M99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='M00', lt='M99')))
+                    current_result[_smo][_mo]['13' + classnames['13'] + u'(M00-M99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='M00', lt='M99')))
+                    current_result[_smo][_mo]['14' + classnames['14'] + u'(N00-N99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='N00', lt='N99')))
+                    current_result[_smo][_mo]['14' + classnames['14'] + u'(N00-N99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='N00', lt='N99')))
+                    current_result[_smo][_mo]['14' + classnames['14'] + u'(N00-N99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='N00', lt='N99')))
+                    current_result[_smo][_mo]['14' + classnames['14'] + u'(N00-N99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='N00', lt='N99')))
+                    current_result[_smo][_mo]['15' + classnames['15'] + u'(O00-O99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='O00', lt='O99')))
+                    current_result[_smo][_mo]['15' + classnames['15'] + u'(O00-O99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='O00', lt='O99')))
+                    current_result[_smo][_mo]['15' + classnames['15'] + u'(O00-O99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='O00', lt='O99')))
+                    current_result[_smo][_mo]['15' + classnames['15'] + u'(O00-O99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='O00', lt='O99')))
+                    current_result[_smo][_mo]['16' + classnames['16'] + u'(P00-P96)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='P00', lt='P96')))
+                    current_result[_smo][_mo]['16' + classnames['16'] + u'(P00-P96)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='P00', lt='P96')))
+                    current_result[_smo][_mo]['16' + classnames['16'] + u'(P00-P96)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='P00', lt='P96')))
+                    current_result[_smo][_mo]['16' + classnames['16'] + u'(P00-P96)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='P00', lt='P96')))
+                    current_result[_smo][_mo]['17' + classnames['17'] + u'(Q00-Q99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='Q00', lt='Q99')))
+                    current_result[_smo][_mo]['17' + classnames['17'] + u'(Q00-Q99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='Q00', lt='Q99')))
+                    current_result[_smo][_mo]['17' + classnames['17'] + u'(Q00-Q99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='Q00', lt='Q99')))
+                    current_result[_smo][_mo]['17' + classnames['17'] + u'(Q00-Q99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='Q00', lt='Q99')))
+                    current_result[_smo][_mo]['18' + classnames['18'] + u'(R00-R99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='R00', lt='R99')))
+                    current_result[_smo][_mo]['18' + classnames['18'] + u'(R00-R99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='R00', lt='R99')))
+                    current_result[_smo][_mo]['18' + classnames['18'] + u'(R00-R99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='R00', lt='R99')))
+                    current_result[_smo][_mo]['18' + classnames['18'] + u'(R00-R99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='R00', lt='R99')))
+                    current_result[_smo][_mo]['19' + classnames['19'] + u'(S00-T98)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='S00', lt='T98')))
+                    current_result[_smo][_mo]['19' + classnames['19'] + u'(S00-T98)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='S00', lt='T98')))
+                    current_result[_smo][_mo]['19' + classnames['19'] + u'(S00-T98)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='S00', lt='T98')))
+                    current_result[_smo][_mo]['19' + classnames['19'] + u'(S00-T98)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='S00', lt='T98')))
+                    current_result[_smo][_mo]['20' + classnames['20'] + u'(V01-Y98)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='V01', lt='Y98')))
+                    current_result[_smo][_mo]['20' + classnames['20'] + u'(V01-Y98)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='V01', lt='Y98')))
+                    current_result[_smo][_mo]['20' + classnames['20'] + u'(V01-Y98)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='V01', lt='Y98')))
+                    current_result[_smo][_mo]['20' + classnames['20'] + u'(V01-Y98)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='V01', lt='Y98')))
+                    current_result[_smo][_mo]['21' + classnames['21'] + u'(Z00-Z99)'].append(
+                        len(self.filter_data(mo_slice_amb, 'mkb', gt='Z00', lt='Z99')))
+                    current_result[_smo][_mo]['21' + classnames['21'] + u'(Z00-Z99)'].append(
+                        len(self.filter_data(mo_slice_stat, 'mkb', gt='Z00', lt='Z99')))
+                    current_result[_smo][_mo]['21' + classnames['21'] + u'(Z00-Z99)'].append(
+                        len(self.filter_data(mo_slice_statzam, 'mkb', gt='Z00', lt='Z99')))
+                    current_result[_smo][_mo]['21' + classnames['21'] + u'(Z00-Z99)'].append(
+                        len(self.filter_data(mo_slice_skormp, 'mkb', gt='Z00', lt='Z99')))
+                    # current_result[_smo][_mo]['22' + classnames['22'] + u'(U00-U85)'].append(
+                    #     len(self.filter_data(mo_slice_amb, 'mkb', gt='U00', lt='U85')))
+                    # current_result[_smo][_mo]['22' + classnames['22'] + u'(U00-U85)'].append(
+                    #     len(self.filter_data(mo_slice_stat, 'mkb', gt='U00', lt='U85')))
+                    # current_result[_smo][_mo]['22' + classnames['22'] + u'(U00-U85)'].append(
+                    #     len(self.filter_data(mo_slice_statzam, 'mkb', gt='U00', lt='U85')))
+                    # current_result[_smo][_mo]['22' + classnames['22'] + u'(U00-U85)'].append(
+                    #     len(self.filter_data(mo_slice_skormp, 'mkb', gt='U00', lt='U85')))
+                    current_result[_smo][_mo]['Итого'].append(mo_sum_amb)
+                    current_result[_smo][_mo]['Итого'].append(mo_sum_stat)
+                    current_result[_smo][_mo]['Итого'].append(mo_sum_statzam)
+                    current_result[_smo][_mo]['Итого'].append(mo_sum_skormp)
+            if not current_result:
+                result_data[_smo]['all'] = {'Итого' : [smo_sum_amb, smo_sum_stat, smo_sum_statzam, smo_sum_skormp]}
+            else:
+                current_result[_smo]['all']['Итого'].append(smo_sum_amb)
+                current_result[_smo]['all']['Итого'].append(smo_sum_stat)
+                current_result[_smo]['all']['Итого'].append(smo_sum_statzam)
+                current_result[_smo]['all']['Итого'].append(smo_sum_skormp)
+        if not current_result:
+            return result_data
+        else:
+            return current_result
+
+
+    def save_monthly_report_data(self, report, month, year):
+        u"""
+        Сериализация и сохранение отчета в отправляемом на сервер виде
+        помогает быстро подгружать основные данные в 107 форму
+        :param report: данные :type dict
+        :param month: месяц выгрузки
+        :param year: год выгрузки
+        :return: None
+        """
+        concat_filename = 'data/' + month + '_' + year
+        with open(concat_filename, 'wb') as f:
+            pickle.dump(report, f)
+
+
+
+    def load_monthly_report_data(self, month, year):
+        u"""
+        Попытка найти и загрузить данные за месяц выгрузки
+        :param month:
+        :param year:
+        :return: report
+        """
+        concat_filename = 'data/' + month + '_' + year
+        if os.path.exists(concat_filename):
+            with open(concat_filename, 'rb') as f:
+                self.loadedData = pickle.load(f)
+                self.loadedData_month = month
+                self.loadedData_year = year
+            return True
+        else:
+            return False
 
     def convert_data(self):
         u"""
@@ -910,7 +1289,7 @@ class CoordinationBase():
         self.selectedMo = params.get('selected_mo', None)
         self.selectedSmo = params.get('selected_smo', None)
         self.nosologies = DataReader().get_nosologies()
-        not_vals = ['null', '']
+        not_vals = ['null', '', None]
         if self.selectedMo not in not_vals and self.selectedSmo not in not_vals:
             self.selectedMo = self.selectedMo.split(',')
             self.selectedMo = [int(val) for val in self.selectedMo]
@@ -939,6 +1318,7 @@ class CoordinationBase():
                                                                             s_dict[smo][mo][j][i])
         return f_dict
 
+
     def get_names_list(self):
         u"""
         Возвращает список наименований организаций
@@ -946,22 +1326,49 @@ class CoordinationBase():
         :return: names :type list
         """
         names = {}
-
-        for smo in self.selectedSmo:
-            names[smo] = Smo_names.objects.using('dictadmin').filter(smo_id=int(smo)).values_list('short_name',
-                                                                                                   flat=True)
-            if len(names[smo]) > 0:
-                names[smo] = names[smo][0]
-            else:
-                names[smo] = u'Неизвестно'
-        for mo in self.selectedMo:
-            names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(mo)).values_list('name_short', flat=True)[0]
+        if self.selectedSmo:
+            for smo in self.selectedSmo:
+                names[smo] = Smo_names.objects.using('dictadmin').filter(smo_id=int(smo)).values_list('short_name',
+                                                                                                       flat=True)
+                if len(names[smo]) > 0:
+                    names[smo] = names[smo][0]
+                else:
+                    names[smo] = u'Неизвестно'
+        else:
+            names_dict = Smo_names.objects.using('dictadmin').values('smo_id', 'short_name')
+            for it in names_dict:
+                names[it['smo_id']] = it['short_name']
+        if self.selectedMo:
+            for mo in self.selectedMo:
+                names[str(mo)] = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(mo)).values_list('name_short', flat=True)[0]
+        else:
+            names_dict = Lpu_names.objects.using('dictadmin').values('lpu_id', 'name_short')
+            for it in names_dict:
+                names[it['lpu_id']] = it['name_short']
         return names
+
+    def prepare_to_show_overall(self, data):
+        u"""
+        Вытягивает из словаря значения верхних уровней
+        и итоговые суммы
+        :param data:
+        :return: result
+        """
+        result = copy.deepcopy(data)
+        for smo, mo_dict in data.items():
+            for mo, values_dict in mo_dict.items():
+                for key, vals in values_dict.items():
+                    if key not in ['all', 'Итого']:
+                        del result[smo][mo][key]
+        return result
 
 class Coordination_illness_views(CoordinationBase):
 
     def __init__(self):
+        self.loadedData_year = CoordinationBase().get_loaded_data_year()
+        self.loadedData_month = CoordinationBase().get_loaded_data_year()
         super(CoordinationBase, self).__init__()
+
 
     def view_empty_coordination_illness(self, request):
         u"""
@@ -973,8 +1380,89 @@ class Coordination_illness_views(CoordinationBase):
         d_reader = DataReader()
         all_smo = d_reader.load_model_smo_names()
         all_mo = d_reader.load_model_mo_names()
-        return render(request, 'coordination_illness.html', {'smo_data': all_smo,
+        return render(request, 'coordination_illness_rebase.html', {'smo_data': all_smo,
                                                              'mo_data': all_mo})
+
+    def view_all_smo_class_names(self, request, *args):
+        u"""
+        Конструктор, собирающий данные по всем смо и по всем мо для каждой смо за отчетный период
+        :param request:
+        :param args:
+        :return:
+        """
+        names = None
+        period_1 = None
+        period_2 = None
+        if request.method == 'GET':
+            self.setup_Settings(request.GET)
+
+            if self.dateYear1 and self.dateYear2 and self.dateMonth1 and self.dateMonth2:
+                names = self.get_names_list()
+                if self.loadedData_year == self.dateYear1 and self.loadedData_month == self.dateMonth1:
+                    daterange = get_daterange(self.dateYear1, self.dateMonth1)
+                    daterange = get_daterange_prev_period(daterange, prev_month=True)
+                    period_1 = self.loadedData
+                    period_1 = self.prepare_to_show_overall(period_1)
+                    smo_column_length = len(list(period_1[list(period_1)[0]]))
+                elif self.load_monthly_report_data(self.dateMonth1, self.dateYear1):
+                    period_1 = self.loadedData
+                    period_1 = self.prepare_to_show_overall(period_1)
+                    smo_column_length = len(list(period_1[list(period_1)[0]]))
+                else:
+                    data = pd.read_csv('data/all_cases', index_col=0, parse_dates=True)
+                    data = data.rename(columns={'caseZid__zap_id__smo_id': 'smo_id',
+                                                'caseZid__lpu': 'lpu',
+                                                'caseZid__stat_or_amb': 'stat_or_amb',
+                                                'mkbExtra': 'mkb',
+                                                'caseZid__dateBeg': 'begDate',
+                                                'caseZid__dateEnd': 'endDate',
+                                                'caseZid__result': 'result',
+                                                'caseZid__zap_id__date_birth': 'birthDate'})
+                    daterange = get_daterange(self.dateYear1, self.dateMonth1)
+                    self.query = self.filter_data(data, 'begDate', gt=daterange[0], lt=daterange[1])
+                    period_1 = self.get_all_smo_data()
+                    daterange = get_daterange(self.dateYear1, self.dateMonth1)
+                    daterange = get_daterange_prev_period(daterange, prev_month=True)
+                    self.query = self.filter_data(data, 'begDate', gt=daterange[0], lt=daterange[1])
+                    period_1 = self.get_all_smo_data(current_result=period_1)
+                    daterange = get_daterange(self.dateYear1, self.dateMonth1)
+                    daterange = get_daterange_prev_period(daterange, prev_year=True)
+                    self.query = self.filter_data(data, 'begDate', gt=daterange[0], lt=daterange[1])
+                    period_1 = self.get_all_smo_data(current_result=period_1)
+                    self.save_monthly_report_data(period_1, self.dateMonth1, self.dateYear1)
+                    self.loadedData = dict(period_1)
+                    period_1 = self.prepare_to_show_overall(period_1)
+                    smo_column_length = len(list(period_1[list(period_1)[0]]))
+
+            return render(request, 'coordination_illness_rebase.html', {'first_period' :period_1,
+                                                                             'names' : names,
+                                                                            'smo_column_length' : smo_column_length,
+                                                                            'date_to_show' : get_date_to_show(self.dateYear1, self.dateMonth1)})
+            # return render(request, 'coordination_illness_rebase.html', {'first_period' : period_1 })
+
+    def view_coordination_illness_load_classes(self, request, *args):
+        u"""
+        Вьюха, возвращающая позиции словаря по смо, мо, нозологической форме.
+        :param request:
+        :param args:
+        :return:
+        """
+        if request.method == 'GET':
+            mo=request.GET.get('mo', None)
+            smo=request.GET.get('smo', None)
+            month = request.GET.get('month', None)
+            year = request.GET.get('year', None)
+            if self.loadedData_year != year and self.loadedData_month != month:
+                if self.load_monthly_report_data(month, year):
+                    dataset = self.loadedData
+                else:
+                    dataset = None
+            else:
+                dataset = self.loadedData
+            response_dict = dataset[int(smo)][int(mo)]
+            print(response_dict)
+            return JsonResponse(response_dict)
+
 
     def view_coordination_illness(self, request, *args):
         u"""

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.template.defaulttags import register
 from django.db.models.functions import Length
-from .models import Nosologies, Mkb
+from .models import Nosologies, Mkb, Lpu_names, Smo_names
 from django.db.models import Q
 from django.utils.timezone import now
 from .views import _names, DataReader
@@ -48,8 +48,12 @@ def recount_rowspan_smo(data):
 def recount_rowspan_mo(data):
     # nosologies = Nosologies.objects.annotate(length=Length('number')).filter(length__lte=2).order_by('id')
     mkb_list = DataReader().get_MKB_classnames()
-    return 2 + len(mkb_list.keys())
+    return 1 + len(mkb_list.keys())
 
+@register.filter
+def recount_rowspan_smo_with_sum_field(data):
+    mkb_list = DataReader().get_MKB_classnames()
+    return (1 + len(mkb_list.keys())) * (len(data.keys()) - 1) + 1
 
 @register.filter
 def display_item(row):
@@ -78,6 +82,37 @@ def get_id_by_name(data, name):
         if v == name:
             return k
     return name
+@register.filter
+def get_name_by_id(data, name):
+    if type(name) == int:
+        result = data.get(str(name), None)
+        if not result:
+            result = data.get(name, None)
+            if not result:
+                return name
+    else:
+        result = data.get(name, None)
+        if name.isdigit():
+            result = data.get(int(name), None)
+        else:
+            result = 'Итого'
+
+    return result
+
+@register.filter
+def get_mo_name(name):
+    if type(name) == str and name.isdigit():
+        value = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(name)).values_list('name_short', flat=True)[0]
+    elif type(name) == int:
+        value = Lpu_names.objects.using('dictadmin').filter(lpu_id=int(name)).values_list('name_short', flat=True)[0]
+    else:
+        value = u'Итого'
+    return value
+
+@register.filter
+def get_smo_name(name):
+    value = Smo_names.objects.using('dictadmin').filter(smo_id=int(name)).values_list('short_name', flat=True)[0]
+    return value
 
 @register.filter
 def get_id(row):

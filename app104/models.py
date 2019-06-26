@@ -39,8 +39,7 @@ class Z_SLS(models.Model):
     vbr = models.BooleanField(blank=True, null=True)
     p_otk = models.BooleanField(blank=True, null=True)
     rslt_d = models.IntegerField(blank=True, null=True)
-    pacientid = models.CharField(max_length=50, blank=True, null=True)
-    parent_id = models.CharField(max_length=50, blank=True, null=True)
+
     is_rf = models.BooleanField(blank=True, null=True)
     s_div = models.IntegerField(blank=True, null=True)
     cure_mode = models.BooleanField(blank=True, null=True)
@@ -88,7 +87,7 @@ class SLS(models.Model):
     ticket_end_date = models.DateField(db_column='TAL_P', verbose_name='Дата окончания номерка')
     pr_d_n = models.PositiveSmallIntegerField(db_column='PR_D_N', verbose_name='..')
     mkbEx = models.PositiveSmallIntegerField(db_column='DS1_PR', verbose_name='Предыдущий мкб')
-    brokenCase = models.PositiveSmallIntegerField(db_column='PRERV_SLUCH', verbose_name='Прерванный случай')
+
     c_zab = models.PositiveSmallIntegerField(db_column='C_ZAB', verbose_name='...')
 
     class Meta:

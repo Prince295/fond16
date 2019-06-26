@@ -229,6 +229,62 @@ def arabic_to_str(number):
     else:
         return number
 
+def get_daterange_prev_period(daterange, prev_month=None, prev_year=None):
+    if prev_month:
+        d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
+        d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(months=-1)
+        daterange = ['{year}-{month}-{day}'.format(year=d1.year, month=correct_month(d1.month), day=correct_day(d1.day)),
+                     '{year}-{month}-{day}'.format(year=d2.year, month=correct_month(d2.month), day=correct_day(d2.day))]
+    if prev_year:
+        d1 = timezone.datetime.strptime(daterange[0], '%Y-%m-%d') + relativedelta.relativedelta(years=-1)
+        d2 = timezone.datetime.strptime(daterange[1], '%Y-%m-%d') + relativedelta.relativedelta(years=-1)
+        daterange = ['{year}-{month}-{day}'.format(year=d1.year, month=correct_month(d1.month), day=correct_day(d1.day)),
+                     '{year}-{month}-{day}'.format(year=d2.year, month=correct_month(d2.month), day=correct_day(d2.day))]
+    return daterange
+
+def correct_month(month):
+    if len(str(month)) == 1:
+        month = '0' + str(month)
+    return month
+def correct_day(day):
+    if len(str(day)) == 1:
+        day = '0' + str(day)
+    return day
+
+def get_date_to_show(year, month):
+    month_variables = {'01': 'Январь',
+                       '02': 'Февраль',
+                       '03': 'Март',
+                       '04': 'Апрель',
+                       '05': 'Май',
+                       '06': 'Июнь',
+                       '07': 'Июль',
+                       '08': 'Август',
+                       '09': 'Сентябрь',
+                       '10': 'Октябрь',
+                       '11': 'Ноябрь',
+                       '12': 'Декабрь'}
+    returned_date = []
+    if len(str(month)) == 1:
+        month = '0' + str(month)
+    daterange = get_daterange(year, month)
+    daterange_month_ago = get_daterange_prev_period(daterange, prev_month=True)
+    month_ago = daterange_month_ago[0].split('-')[1]
+    second_year = daterange_month_ago[0].split('-')[0]
+    year_ago = str(int(year) - 1)
+    prefix = u'Выгрузка данных за'
+    returned_date.append(u'{prefix} {month} {year} года/ {month_ago} {second_year} года.'.format(prefix=prefix,
+                                                                                                 month=month_variables[month],
+                                                                                                 year=year,
+                                                                                                 month_ago=month_variables[month_ago],
+                                                                                                 second_year=second_year))
+    returned_date.append(u'{prefix} {month} {year} года/ {month} {year_ago} года.'.format(prefix=prefix,
+                                                                                                 month=month_variables[month],
+                                                                                                 year=year,
+                                                                                                 year_ago=year_ago))
+    return returned_date
+
+
 MKB_CLASS_RANGE = {
     '01'    : 'A00-B99',
     '02'    : 'C00-D48',

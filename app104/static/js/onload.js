@@ -219,48 +219,95 @@ $('.hideelembtnnoz').click(function () {
 
     }
 });
+
 $('#colorDiff').change(function () {
         var tableElems = document.getElementById('table_illness').getElementsByTagName('td');
         if (this.checked) {
             for (let i = 0, len = tableElems.length; i < len; i++) {
-                if (tableElems[i].innerText.endsWith('%')) {
-                    var value = tableElems[i].innerText.split(/\s+/)[0];
-                    if (value.startsWith('new')) {
-                        tableElems[i].style.backgroundColor = '#e9432088';
-                    }
-                    if (value.startsWith('-')) {
-                        if (Number(value) < -10) {
+                let values = tableElems[i].getElementsByTagName('span')
+
+                if (values.length >= 2) {
+                    if (Number(values[1].innerText) != 0) {
+                        let res = (Number(values[0].innerText) - Number(values[1].innerText)) / Number(values[1].innerText)
+                        if (res > 0.1) {
+                            tableElems[i].style.backgroundColor = '#e9432088';
+                        }
+                        if (res < -0.1) {
                             tableElems[i].style.backgroundColor = '#00ffa3';
                         }
                     }
                     else {
-                        if (Number(value) > 10) {
+                        if (Number(values[0].innerText != 0)) {
                             tableElems[i].style.backgroundColor = '#e9432088';
                         }
+
                     }
                 }
             }
         }
         else {
             for (let i = 0, len = tableElems.length; i < len; i++) {
-                if (tableElems[i].innerText.endsWith('%')) {
-                    var value = tableElems[i].innerText.split(/\s+/)[0];
-                    if (value.startsWith('new')) {
-                        tableElems[i].style.backgroundColor = 'transparent';
-                    }
-                    if (value.startsWith('-')) {
-                        if (Number(value) < -10) {
+                let values = tableElems[i].getElementsByTagName('span')
+
+                if (values.length >= 2) {
+                    if (Number(values[1].innerText) != 0) {
+                        let res = (Number(values[0].innerText) - Number(values[1].innerText)) / Number(values[1].innerText)
+                        if (res > 0.1) {
+                            tableElems[i].style.backgroundColor = 'transparent';
+                        }
+                        if (res < -0.1) {
                             tableElems[i].style.backgroundColor = 'transparent';
                         }
                     }
                     else {
-                        if (Number(value) > 10) {
+                        if (Number(values[0].innerText != 0)) {
                             tableElems[i].style.backgroundColor = 'transparent';
                         }
+
                     }
                 }
             }
         }
+        // if (this.checked) {
+        //     for (let i = 0, len = tableElems.length; i < len; i++) {
+        //         if (tableElems[i].innerText.endsWith('%')) {
+        //             var value = tableElems[i].innerText.split(/\s+/)[0];
+        //             if (value.startsWith('new')) {
+        //                 tableElems[i].style.backgroundColor = '#e9432088';
+        //             }
+        //             if (value.startsWith('-')) {
+        //                 if (Number(value) < -10) {
+        //                     tableElems[i].style.backgroundColor = '#00ffa3';
+        //                 }
+        //             }
+        //             else {
+        //                 if (Number(value) > 10) {
+        //                     tableElems[i].style.backgroundColor = '#e9432088';
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // else {
+        //     for (let i = 0, len = tableElems.length; i < len; i++) {
+        //         if (tableElems[i].innerText.endsWith('%')) {
+        //             var value = tableElems[i].innerText.split(/\s+/)[0];
+        //             if (value.startsWith('new')) {
+        //                 tableElems[i].style.backgroundColor = 'transparent';
+        //             }
+        //             if (value.startsWith('-')) {
+        //                 if (Number(value) < -10) {
+        //                     tableElems[i].style.backgroundColor = 'transparent';
+        //                 }
+        //             }
+        //             else {
+        //                 if (Number(value) > 10) {
+        //                     tableElems[i].style.backgroundColor = 'transparent';
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 });
 $('#coord_d_1').click(function () {
     let smo_to_server_checked = document.getElementsByClassName('checked_smo');
@@ -703,6 +750,184 @@ $('.showelembtn').click(function () {
 
     });
 
+
+});
+$(document).on('click','.btngetclasses', function () {
+    var _list = this.firstChild.className;
+    if ( _list.indexOf("icon-circle-plus") != -1 ) {
+        var params = window
+            .location
+            .search
+            .replace('?', '')
+            .split('&')
+            .reduce(
+                function (p, e) {
+                    var a = e.split('=');
+                    p[decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
+                    return p;
+                },
+                {}
+            );
+        let parent_id = this.parentNode.parentNode.id;
+        let parent = this.parentNode.parentNode;
+        let j = 1;
+        parent_id = parent_id.split(' ');
+        $.get('/return_classnames',
+            {
+                mo: parent_id[1],
+                smo: parent_id[0],
+                month: params['selected_month_1'],
+                year: params['selected_year_1']
+            },
+            function (data) {
+                $.each(data, function (key, value) {
+                    var row_index = parent.rowIndex;
+                    var newRow = document.getElementById('table_illness').insertRow(row_index + j);
+                    var smo = document.getElementById(parent_id[0])
+                    var mo = document.getElementById(parent_id[0] + ' ' + parent_id[1])
+                    var newCell = newRow.insertCell(0);
+                    newCell.innerText = key;
+                    $(newRow).addClass(parent_id[0]);
+                    $(newRow).addClass(parent_id[1]);
+                    $(newRow).addClass(parent_id[2]);
+
+                    newCell = newRow.insertCell(1);
+                    let newDiv = document.createElement('div');
+                    let newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('amp_header');
+                    let first_child = document.createElement('span');
+                    first_child.innerText = value[0];
+                    let second_child = document.createElement('span');
+                    second_child.innerText = value[4];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    newCell = newRow.insertCell(2);
+                    newDiv = document.createElement('div');
+                    newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('smp_header');
+                    first_child = document.createElement('span');
+                    first_child.innerText = value[1];
+                    second_child = document.createElement('span');
+                    second_child.innerText = value[5];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    newCell = newRow.insertCell(3);
+                    newDiv = document.createElement('div');
+                    newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('statzam_header');
+                    first_child = document.createElement('span');
+                    first_child.innerText = value[2];
+                    second_child = document.createElement('span');
+                    second_child.innerText = value[6];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    newCell = newRow.insertCell(4);
+                    newDiv = document.createElement('div');
+                    newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('skormp_header');
+                    first_child = document.createElement('span');
+                    first_child.innerText = value[3];
+                    second_child = document.createElement('span');
+                    second_child.innerText = value[7];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    newCell = newRow.insertCell(5);
+                    newDiv = document.createElement('div');
+                    newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('amp_header_second');
+                    first_child = document.createElement('span');
+                    first_child.innerText = value[0];
+                    second_child = document.createElement('span');
+                    second_child.innerText = value[8];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    newCell = newRow.insertCell(6);
+                    newDiv = document.createElement('div');
+                    newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('smp_header_second');
+                    first_child = document.createElement('span');
+                    first_child.innerText = value[1];
+                    second_child = document.createElement('span');
+                    second_child.innerText = value[9];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    newCell = newRow.insertCell(7);
+                    newDiv = document.createElement('div');
+                    newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('statzam_header_second');
+                    first_child = document.createElement('span');
+                    first_child.innerText = value[2];
+                    second_child = document.createElement('span');
+                    second_child.innerText = value[10];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    newCell = newRow.insertCell(8);
+                    newDiv = document.createElement('div');
+                    newSecondDiv = document.createElement('div');
+                    $(newCell).addClass('diagonal-line');
+                    $(newCell).addClass('skormp_header_second');
+                    first_child = document.createElement('span');
+                    first_child.innerText = value[3];
+                    second_child = document.createElement('span');
+                    second_child.innerText = value[11];
+                    newDiv.appendChild(first_child);
+                    newSecondDiv.appendChild(second_child);
+                    newCell.appendChild(newDiv);
+                    newCell.appendChild(newSecondDiv);
+
+                    smo.rowSpan++;
+                    mo.rowSpan++;
+                    j++;
+                });
+            },
+            'json');
+        $(this.firstChild).addClass('icon-circle-minus');
+        $(this.firstChild).removeClass('icon-circle-plus');
+    }
+    else {
+        var items_to_remove_list = document.getElementsByClassName(this.parentNode.parentNode.id);
+        var parent_id = this.parentNode.parentNode.id.split(' ');
+        var smo = document.getElementById(parent_id[0])
+        var mo = document.getElementById(parent_id[0] + ' ' + parent_id[1])
+        let items_length = items_to_remove_list.length;
+        let _table = document.getElementById('table_illness');
+        for ( let i = 0; i < items_length; i++) {
+            _table.deleteRow(this.parentNode.parentNode.rowIndex + 1);
+            smo.rowSpan--;
+            mo.rowSpan--;
+        };
+        $(this.firstChild).addClass('icon-circle-plus');
+        $(this.firstChild).removeClass('icon-circle-minus');
+
+    };
 
 });
 function showElems(editedItem) {
