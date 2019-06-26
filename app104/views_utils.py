@@ -138,6 +138,114 @@ def repetitive_number(string, count, qty):
     else:
         return True
 
+def arabic_to_roman(arabic):
+
+    if type(arabic) == str:
+        arabic = int(arabic)
+    start = arabic
+
+    # print "arabic", arabic
+
+    m = (arabic / 1000)
+    arabic = arabic - (m * 1000)
+    varm = ""
+    count = 0
+    while (count < m):
+        varm = "M" + varm
+        count = count + 1
+
+    # print "varm", varm, "arabic", arabic, m
+
+    d = (arabic / 500)
+    arabic = arabic - (d * 500)
+    vard = ""
+    count = 0
+    while (count < d):
+        vard = "D" + vard
+        count = count + 1
+
+    # print "vard", vard, "arabic", arabic, d
+
+    c = (arabic / 100)
+    arabic = arabic - (c * 100)
+    varc = ""
+    count = 0
+    while (count < c):
+        varc = "C" + varc
+        count = count + 1
+
+    # print "varc", varm, "arabic", arabic, c
+
+    l = (arabic / 50)
+    arabic = arabic - (l * 50)
+    varl = ""
+    count = 0
+    while (count < l):
+        varl = "L" + varl
+        count = count + 1
+
+    # print "varl", varl, "arabic", arabic, l
+
+    x = (arabic / 10)
+    arabic = arabic - (x * 10)
+    varx = ""
+    count = 0
+    while (count < x):
+        varx = "X" + varx
+        count = count + 1
+
+    # print "varx", varx, "arabic", arabic, x
+
+    v = (arabic / 5)
+    arabic = arabic - (v * 5)
+    varv = ""
+    count = 0
+    while (count < v):
+        varv = "V" + varv
+        count = count + 1
+
+    # print "varv", varv, "arabic", arabic, v
+
+    i = (arabic / 1)
+    arabic = arabic - (i * 1)
+    vari = ""
+    count = 0
+    while (count < i):
+        vari = "I" + vari
+        count = count + 1
+
+    # print "vari", vari, "arabic", arabic, i
+
+    # Reformat to take account of number 900s & 400s in arabic number
+    if c == 4 and d == 1:  # =900
+        vard = ""
+        varc = "CM"
+    elif c == 4 and d == 0:  # =400
+        vard = ""
+        varc = "CD"
+    else:
+        varc = varc
+    # Reformat to take account of number 90s & 40s in arabic number
+    if x == 4 and l == 1:  # =90
+        varl = ""
+        varx = "XC"
+    elif x == 4 and l == 0:  # =40
+        varl = ""
+        varx = "XL"
+    else:
+        varx = varx
+    # Reformat to take account of number 9s & 4s in arabic number
+    if i == 4 and v == 1:  # =9
+        vari = ""
+        varv = "IX"
+    elif i == 4 and v == 0:  # =4
+        vari = "IV"
+    else:
+        varv = varv
+
+    roman = (varm + vard + varc + varl + varx + varv + vari)
+    return roman
+
 def roman_to_arabic(string):
     u'''
 

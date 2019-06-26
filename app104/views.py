@@ -19,12 +19,12 @@ from django.contrib.auth.decorators import login_required
 
 from .views_utils import copy_data, get_daterange, get_column, is_leap_year, \
     calculate_date, get_data_to_result_header, MKB_CLASS_RANGE, MKB_CLASS_RANGE_ROMAN, \
-    roman_to_arabic, arabic_to_str, get_daterange_prev_period, get_date_to_show
+    roman_to_arabic, arabic_to_str, arabic_to_roman,  get_daterange_prev_period, get_date_to_show
 from .models import SLS, Nosologies, Mkb, Lpu_names, Patients, Z_SLS, Smo_names
 
 
-global _data, _data_coord_death, _lpu_names, _data_coord_illness, _data_coord_illness_prev_year, data_for_illness_prev_month, _names
-
+global _data, _data_coord_death, _lpu_names, _data_coord_illness, _data_coord_illness_prev_year, data_for_illness_prev_month, _names, _all_data
+_all_data = False
 _data = []
 _data_coord_death = {}
 _lpu_names = {}
@@ -63,13 +63,13 @@ def authentificate_func(request):
         else:
             return HttpResponseBadRequest()
 
-        return render(request, 'coordination_illness.html', {'user' : user})
+        return render(request, 'coordination_illness_rebase.html', {'user' : user})
     else:
-        return render(request, 'coordination_illness.html')
+        return render(request, 'coordination_illness_rebase.html')
 
 def logout_func(request):
     logout(request)
-    return render(request, 'coordination_illness.html')
+    return render(request, 'coordination_illness_rebase.html')
 
 
 def load_data_old(request):
@@ -765,7 +765,35 @@ class DataReader():
             classnames[arabic_to_str(roman_to_arabic(mkb[0]))] = mkb[1]
         return classnames
 
+    def get_MKB_blocknames_filter(self, filter=None):
+        u'''
+        Возвращает список блоков с фильтром по классу
+        :param filter:
+        :return: :type dict {key : (val1, val2)}
+        '''
+        class_id  = '----'
+        blocknames = {}
+        for k, v in MKB_CLASS_RANGE_ROMAN.items():
+            if v == filter:
+                class_id = k
+        mkbs = Mkb.objects.all().order_by('diagid').filter(classid=class_id).values_list('classid', 'blockid', 'blockname')
+        counts = 1
+        used_blocks = []
+
+        for mkb in mkbs:
+            if mkb[1] not in used_blocks:
+                blocknames[arabic_to_str(roman_to_arabic(mkb[0])) + '.' + str(counts)] = (mkb[1], mkb[2])
+                counts += 1
+                used_blocks.append(mkb[1])
+
+        return blocknames
+
+
     def get_MKB_blocknames(self):
+        u"""
+        Возвращает список классов и блоков
+        :return:
+        """
         classnames = self.get_MKB_classnames()
         blocknames = {}
         all_mkb = Mkb.objects.all().order_by('diagid').values_list('classid', 'blockid', 'blockname')
@@ -806,6 +834,8 @@ class CoordinationBase():
         self.query = None # type: pandas.DataFrame
         self.query_copy = None #type: pandas.DataFrame
 
+        self._all_data = None
+
 
     def get_loaded_data_month(self):
         return self.loadedData_month
@@ -813,6 +843,13 @@ class CoordinationBase():
     def get_loaded_data_year(self):
         return self.loadedData_year
 
+    @staticmethod
+    def set_all_data(self, value):
+        self._all_data = value
+
+    @staticmethod
+    def get_all_data(self):
+        return self._all_data
 
     def filter_data(self, data_frame, column, cond=None, gt=None, lt=None):
         u"""
@@ -1164,6 +1201,79 @@ class CoordinationBase():
             return current_result
 
 
+    def get_blockname_data(self, smo, mo, year, month,  classname, dataframe):
+        u"""
+        Вернет данные по блоку,
+        в зависимости от класса, мо, смо
+        :param classname:
+        :return: :type: dict
+        """
+        mo = int(mo)
+        smo = int(smo)
+        classname = classname[0:2]
+        self._all_data = dataframe
+        mkb_range = MKB_CLASS_RANGE.get(classname)
+        if mkb_range:
+            blocks = DataReader().get_MKB_blocknames_filter(mkb_range)
+
+
+        nos_rows = {}
+
+        daterange = get_daterange(year, month)
+        first_period = self.filter_data(self._all_data,'begDate', gt=daterange[0], lt=daterange[1])
+        daterange_m = get_daterange_prev_period(daterange, prev_month=True)
+        daterange_y = get_daterange_prev_period(daterange, prev_year=True)
+        second_period = self.filter_data(self._all_data, 'begDate', gt=daterange_m[0], lt=daterange_m[1])
+        third_period = self.filter_data(self._all_data, 'begDate', gt=daterange_y[0], lt= daterange_y[1])
+
+        smo_filter = self.filter_data(first_period, 'smo_id', cond=smo)
+        mo_filter = self.filter_data(smo_filter, 'lpu', cond=mo)
+        slice_amb = self.filter_data(mo_filter, 'stat_or_amb', cond=3)
+        slice_stat = self.filter_data(mo_filter, 'stat_or_amb', cond=[1, 2])
+        slice_statzam = mo_filter[mo_filter.stat_or_amb.isna()]
+        slice_skormp = self.filter_data(mo_filter, 'stat_or_amb', cond=4)
+
+        smo_filter_m = self.filter_data(second_period, 'smo_id', cond=smo)
+        mo_filter_m = self.filter_data(smo_filter_m, 'lpu', cond=mo)
+        slice_amb_m = self.filter_data(mo_filter_m, 'stat_or_amb', cond=3)
+        slice_stat_m = self.filter_data(mo_filter_m, 'stat_or_amb', cond=[1, 2])
+        slice_statzam_m = mo_filter_m[mo_filter_m.stat_or_amb.isna()]
+        slice_skormp_m = self.filter_data(mo_filter_m, 'stat_or_amb', cond=4)
+
+        smo_filter_y = self.filter_data(third_period, 'smo_id', cond=smo)
+        mo_filter_y = self.filter_data(smo_filter_y, 'lpu', cond=mo)
+        slice_amb_y = self.filter_data(mo_filter_y, 'stat_or_amb', cond=3)
+        slice_stat_y = self.filter_data(mo_filter_y, 'stat_or_amb', cond=[1, 2])
+        slice_statzam_y = mo_filter_y[mo_filter_y.stat_or_amb.isna()]
+        slice_skormp_y = self.filter_data(mo_filter_y, 'stat_or_amb', cond=4)
+        for blockname, blockvals in blocks.items():
+            key = blockname + blockvals[1] + blockvals[0]
+            if blockvals[0].endswith('))'):
+                mkb_first = blockvals[0][1:-2]
+                mkb_second = mkb_first
+            else:
+                mkb_first = blockvals[0].split('-')[0][1:]
+                mkb_second = blockvals[0].split('-')[1][:-1]
+
+            row = [0 for i in range(12)]
+            row[0] = len(self.filter_data(slice_amb, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[1] = len(self.filter_data(slice_stat, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[2] = len(self.filter_data(slice_statzam, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[3] = len(self.filter_data(slice_skormp, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[4] = len(self.filter_data(slice_amb_m, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[5] = len(self.filter_data(slice_stat_m, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[6] = len(self.filter_data(slice_statzam_m, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[7] = len(self.filter_data(slice_skormp_m, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[8] = len(self.filter_data(slice_amb_y, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[9] = len(self.filter_data(slice_stat_y, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[10] = len(self.filter_data(slice_statzam_y, 'mkb', gt=mkb_first, lt=mkb_second))
+            row[11] = len(self.filter_data(slice_skormp_y, 'mkb', gt=mkb_first, lt=mkb_second))
+            nos_rows[key] = row
+
+        return nos_rows
+
+
+
     def save_monthly_report_data(self, report, month, year):
         u"""
         Сериализация и сохранение отчета в отправляемом на сервер виде
@@ -1363,11 +1473,21 @@ class CoordinationBase():
         return result
 
 class Coordination_illness_views(CoordinationBase):
+    class_all_data = pd.read_csv('data/all_cases', index_col=0, parse_dates=True).rename(
+                                columns={'caseZid__zap_id__smo_id': 'smo_id',
+                                         'caseZid__lpu': 'lpu',
+                                         'caseZid__stat_or_amb': 'stat_or_amb',
+                                         'mkbExtra': 'mkb',
+                                         'caseZid__dateBeg': 'begDate',
+                                         'caseZid__dateEnd': 'endDate',
+                                         'caseZid__result': 'result',
+                                         'caseZid__zap_id__date_birth': 'birthDate'})
 
     def __init__(self):
         self.loadedData_year = CoordinationBase().get_loaded_data_year()
         self.loadedData_month = CoordinationBase().get_loaded_data_year()
         super(CoordinationBase, self).__init__()
+
 
 
     def view_empty_coordination_illness(self, request):
@@ -1418,6 +1538,7 @@ class Coordination_illness_views(CoordinationBase):
                                                 'caseZid__dateEnd': 'endDate',
                                                 'caseZid__result': 'result',
                                                 'caseZid__zap_id__date_birth': 'birthDate'})
+                    self.set_all_data(data)
                     daterange = get_daterange(self.dateYear1, self.dateMonth1)
                     self.query = self.filter_data(data, 'begDate', gt=daterange[0], lt=daterange[1])
                     period_1 = self.get_all_smo_data()
@@ -1442,7 +1563,7 @@ class Coordination_illness_views(CoordinationBase):
 
     def view_coordination_illness_load_classes(self, request, *args):
         u"""
-        Вьюха, возвращающая позиции словаря по смо, мо, нозологической форме.
+        Вьюха, возвращающая позиции словаря по смо, мо
         :param request:
         :param args:
         :return:
@@ -1460,9 +1581,26 @@ class Coordination_illness_views(CoordinationBase):
             else:
                 dataset = self.loadedData
             response_dict = dataset[int(smo)][int(mo)]
-            print(response_dict)
+
             return JsonResponse(response_dict)
 
+    def view_coordination_illness_load_blocks(self, request, *args):
+        u"""
+        Вьюха, возвращающая позиции словаря по смо, мо, нозологической форме
+        :param request:
+        :param args:
+        :return:
+        """
+        if request.method == 'GET':
+            mo=request.GET.get('mo', None)
+            smo=request.GET.get('smo', None)
+            month = request.GET.get('month', None)
+            year = request.GET.get('year', None)
+            classname = request.GET.get('classname', None)
+            nos_data = self.get_blockname_data(smo, mo, year, month, classname,  dataframe=self.class_all_data)
+            response_dict = nos_data
+
+            return JsonResponse(response_dict)
 
     def view_coordination_illness(self, request, *args):
         u"""
@@ -1485,6 +1623,7 @@ class Coordination_illness_views(CoordinationBase):
                                         'caseZid__dateEnd' : 'endDate',
                                         'caseZid__result' : 'result',
                                         'caseZid__zap_id__date_birth' : 'birthDate'})
+            self.set_all_data(data)
             d_reader = DataReader()
             all_smo = d_reader.load_model_smo_names()
             all_mo = d_reader.load_model_mo_names()
@@ -1546,6 +1685,7 @@ class Coordination_death_views(CoordinationBase):
                                         'caseZid__dateEnd' : 'endDate',
                                         'caseZid__result' : 'result',
                                         'caseZid__zap_id__date_birth' : 'birthDate'})
+            self.set_all_data(data)
             d_reader = DataReader()
             all_smo = d_reader.load_model_smo_names()
             all_mo = d_reader.load_model_mo_names()
