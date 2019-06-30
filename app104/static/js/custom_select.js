@@ -64,70 +64,7 @@ $('#select_month_1').ready( function () {
 });
 
 
-$('#select_month_2').ready( function () {
-    const inputField = document.getElementById('select_month_2').querySelector('.chosen-value');
-    const dropdown = document.getElementById('select_month_2').querySelector('.value-list');
-    const dropdownArray = [... document.getElementById('select_month_2').querySelectorAll('.li-selector')];
-    // dropdown.classList.add('open');
-    // inputField.focus(); // Demo purposes only
-    let valueArray = [];
-    dropdownArray.forEach(item => {
-      valueArray.push(item.textContent);
-    });
 
-    const closeDropdown = () => {
-      dropdown.classList.remove('open');
-    }
-
-    inputField.addEventListener('input', () => {
-      dropdown.classList.add('open');
-      let inputValue = inputField.value.toLowerCase();
-      let valueSubstring;
-      if (inputValue.length > 0) {
-        for (let j = 0; j < valueArray.length; j++) {
-          if (!(inputValue.substring(0, inputValue.length) === valueArray[j].substring(0, inputValue.length).toLowerCase())) {
-            dropdownArray[j].classList.add('closed');
-          } else {
-            dropdownArray[j].classList.remove('closed');
-          }
-        }
-      } else {
-        for (let i = 0; i < dropdownArray.length; i++) {
-          dropdownArray[i].classList.remove('closed');
-        }
-      }
-    });
-
-    dropdownArray.forEach(item => {
-      item.addEventListener('click', (evt) => {
-        inputField.value = item.textContent;
-        dropdownArray.forEach(dropdown => {
-          dropdown.classList.add('closed');
-        });
-      });
-    })
-
-    inputField.addEventListener('focus', () => {
-       inputField.placeholder = 'Начните вводить..';
-       dropdown.classList.add('open');
-       dropdownArray.forEach(dropdown => {
-         dropdown.classList.remove('closed');
-       });
-    });
-
-    inputField.addEventListener('blur', () => {
-       inputField.placeholder = 'Январь';
-      dropdown.classList.remove('open');
-    });
-
-    document.getElementById('select_month_2').addEventListener('click', (evt) => {
-      const isDropdown = dropdown.contains(evt.target);
-      const isInput = inputField.contains(evt.target);
-      if (!isDropdown && !isInput) {
-        dropdown.classList.remove('open');
-      }
-    });
-});
 
 $('#select_year_1').ready( function () {
     const inputField = document.getElementById('select_year_1').querySelector('.chosen-value');
@@ -194,6 +131,71 @@ $('#select_year_1').ready( function () {
     });
 });
 
+
+$('#select_month_2').ready( function () {
+    const inputField = document.getElementById('select_month_2').querySelector('.chosen-value');
+    const dropdown = document.getElementById('select_month_2').querySelector('.value-list');
+    const dropdownArray = [... document.getElementById('select_month_2').querySelectorAll('.li-selector')];
+    // dropdown.classList.add('open');
+    // inputField.focus(); // Demo purposes only
+    let valueArray = [];
+    dropdownArray.forEach(item => {
+      valueArray.push(item.textContent);
+    });
+
+    const closeDropdown = () => {
+      dropdown.classList.remove('open');
+    }
+
+    inputField.addEventListener('input', () => {
+      dropdown.classList.add('open');
+      let inputValue = inputField.value.toLowerCase();
+      let valueSubstring;
+      if (inputValue.length > 0) {
+        for (let j = 0; j < valueArray.length; j++) {
+          if (!(inputValue.substring(0, inputValue.length) === valueArray[j].substring(0, inputValue.length).toLowerCase())) {
+            dropdownArray[j].classList.add('closed');
+          } else {
+            dropdownArray[j].classList.remove('closed');
+          }
+        }
+      } else {
+        for (let i = 0; i < dropdownArray.length; i++) {
+          dropdownArray[i].classList.remove('closed');
+        }
+      }
+    });
+
+    dropdownArray.forEach(item => {
+      item.addEventListener('click', (evt) => {
+        inputField.value = item.textContent;
+        dropdownArray.forEach(dropdown => {
+          dropdown.classList.add('closed');
+        });
+      });
+    })
+
+    inputField.addEventListener('focus', () => {
+       inputField.placeholder = 'Начните вводить..';
+       dropdown.classList.add('open');
+       dropdownArray.forEach(dropdown => {
+         dropdown.classList.remove('closed');
+       });
+    });
+
+    inputField.addEventListener('blur', () => {
+       inputField.placeholder = 'Январь';
+      dropdown.classList.remove('open');
+    });
+
+    document.getElementById('select_month_2').addEventListener('click', (evt) => {
+      const isDropdown = dropdown.contains(evt.target);
+      const isInput = inputField.contains(evt.target);
+      if (!isDropdown && !isInput) {
+        dropdown.classList.remove('open');
+      }
+    });
+});
 
 $('#select_year_2').ready( function () {
     const inputField = document.getElementById('select_year_2').querySelector('.chosen-value');

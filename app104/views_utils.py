@@ -25,6 +25,11 @@ def copy_data(result, copied, smo_list, mo_list):
                             result[k][kk][num].append(0)
     return result
 
+def get_smo_length(data):
+    smo_column_length = {}
+    for smo, mo_dict in data.items():
+        smo_column_length[smo] = len(list(mo_dict))
+    return smo_column_length
 
 def get_column(new, old):
     u"""Возвращает строковое отображение колонки"""
@@ -46,28 +51,25 @@ def calculate_date(args):
     :return:
     """
     if len(args) > 0:
-        if args[0] =='adult':
+        if args[0] == 'd_18_60' or args[0] == 'h_18_60' :
             date_begin = timezone.datetime.now() + relativedelta.relativedelta(years=-60, months=-11, days=-31)
             date_end = timezone.datetime.now() + relativedelta.relativedelta(years=-18)
             return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
                     '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
-        elif args[0] == 'pensioners':
+        elif args[0] == 'd_61' or args[0] == 'h_61':
             date_begin = timezone.now() + relativedelta.relativedelta(years=-170)
             date_end = timezone.now() + relativedelta.relativedelta(years=-61)
             return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
                     '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
-        elif args[0] == 'babies':
-            date_begin = timezone.now() + relativedelta.relativedelta(years=-1)
-            date_end = timezone.now()
-            return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
-                    '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
-        elif args[0] == 'child':
+        elif args[0] =='d_1_18':
             date_begin = timezone.now() + relativedelta.relativedelta(years=-17, months=-11, days=-31)
             date_end = timezone.now() + relativedelta.relativedelta(years=-1)
             return ['{year}-{month}-{day}'.format(year=date_begin.year, month=date_begin.month, day=date_begin.day),
                     '{year}-{month}-{day}'.format(year=date_end.year, month=date_end.month, day=date_end.day)]
         else:
             return ['1000-01-01', '3000-01-01']
+
+
 
 def get_daterange(year, month):
     u"""
@@ -442,3 +444,20 @@ MKB_CLASS_RANGE_ROMAN = {
     'XXI'  : 'Z00-Z99',
     'XXII' : 'U00-U85'
 }
+
+def set_mkb_to_finder(mkb):
+    if len(mkb) > 3:
+        pass
+    else:
+        slice_mkb = mkb[1:]
+        head_mkb = mkb[0]
+        next_ = int(slice_mkb) + 1
+        if next_ == 100:
+            suff = 'AA'
+        else:
+            suff = str(next_)
+            if len(suff) == 1:
+                suff = '0' + suff
+        mkb = head_mkb + suff
+    return mkb
+

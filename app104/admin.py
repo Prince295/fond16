@@ -137,3 +137,16 @@ def get_years(data):
     years.append(current_year - 2)
     years.append(current_year - 3)
     return years
+
+@register.filter
+def get_percents(new, old):
+    if old != 0:
+        result = 100 * (new - old)/old
+        result = round(result, 2)
+    else:
+        if new != 0:
+            result = 'new'
+        else:
+            result = 0.00
+    return u'{} %'.format(str(result))
+

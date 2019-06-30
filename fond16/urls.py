@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'^fond16/logout/$', logout_func),
     url(r'^load_cache/$', load_data, name='load_data'),
     url(r'^$', base, name='base'),
-    url(r'^coord/$', coordination, name='coordination'),
+    url(r'^coord/$', Coordination_illness_views().view_empty_coordination_illness, name='coordination'),
     url(r'^coord/illness/$', Coordination_illness_views().view_empty_coordination_illness, name='coord_illness'),
     url(r'^coord/death/$', Coordination_death_views().view_empty_coordination_death, name='coord_death'),
     url(r'^load/$', onload, name='onload'),
@@ -39,6 +39,11 @@ urlpatterns = [
     url(r'^coordination_death/(\w+)/$', Coordination_death_views().view_coordination_death, name='coord_death_tables'),
     url(r'^coordination_illness/(\w+)/$', Coordination_illness_views().view_coordination_illness, name='coord_illness_tables'),
     url(r'^coordination_illness_rebase/$', Coordination_illness_views().view_all_smo_class_names, name='coord_illness_rebase'),
+    url(r'^coordination_death_rebase/$', Coordination_death_views().view_all_smo_class_names, name='coord_death_rebase'),
     url(r'^return_classnames/$', Coordination_illness_views().view_coordination_illness_load_classes),
-    url(r'^return_blocknames/$', Coordination_illness_views().view_coordination_illness_load_blocks)
+    url(r'^return_classnames_d/$', Coordination_death_views().view_coordination_death_load_classes),
+    url(r'^return_blocknames/$', Coordination_illness_views().view_coordination_illness_load_blocks),
+    url(r'^return_blocknames_d/$', Coordination_death_views().view_coordination_death_load_blocks),
+    url(r'^reports/$', Reports_views().view_report_menu),
+    url(r'^reports/(\w+)/$', Reports_views().view_report)
 ]
