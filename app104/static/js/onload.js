@@ -33,7 +33,7 @@ $.ajax({url: '/fond16/logout/'}).done( function () {
 $('.hideelembtn').click(function(){
     var _list = this.firstChild.className;
     var table = document.getElementById('table_illness');
-    if ( _list.indexOf("icon-circle-minus") != -1 ){
+    if ( _list.indexOf("icon-circle-with-cross") != -1 ){
 
         var newItem = document.createElement('a');
         newItem.id = this.parentNode.id +'hidden';
@@ -73,61 +73,61 @@ $('.hideelembtn').click(function(){
         };
         if (this.parentNode.id == 'illness_header') {
 
-              document.getElementById('string_code_header').style.display = 'none';
-              document.getElementById('nosologies_header').style.display = 'none';
-              var items = document.getElementsByClassName('_numheader0');
+              document.getElementById('illness_header').style.display = 'none';
+              var items = document.getElementsByClassName('illness_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'none';
               };
-              var items = document.getElementsByClassName('_numheader1');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'none';
-              };
-        };
-        if (this.parentNode.id == 'mkb_header') {
-              var items = document.getElementsByClassName('_numheader2');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'none';
-              };
+
         };
         if (this.parentNode.id == 'all_cases') {
-              var items = document.getElementsByClassName('_numheader3');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'none';
-              };
               document.getElementById('amp_header').style.display = 'none';
-              var items = document.getElementsByClassName('_numheader4');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'none';
-              };
               document.getElementById('smp_header').style.display = 'none';
-              var items = document.getElementsByClassName('_numheader5');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'none';
-              };
               document.getElementById('statzam_header').style.display = 'none';
-              var items = document.getElementsByClassName('_numheader6');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'none';
-              };
               document.getElementById('smp_out_header').style.display = 'none';
-        };
-        if (this.parentNode.id == 'string_code_header') {
-              document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
-              var items = document.getElementsByClassName('_numheader0');
+              var items = document.getElementsByClassName('amp_header');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              var items = document.getElementsByClassName('smp_header');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              var items = document.getElementsByClassName('statzam_header');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              var items = document.getElementsByClassName('skormp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'none';
               };
         };
-        if (this.parentNode.id == 'nosologies_header') {
-             document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
-             var items = document.getElementsByClassName('_numheader1');
+        if (this.parentNode.id == 'all_cases_second') {
+
+              document.getElementById('amp_header_second').style.display = 'none';
+              document.getElementById('smp_header_second').style.display = 'none';
+              document.getElementById('statzam_header_second').style.display = 'none';
+              document.getElementById('smp_out_header_second').style.display = 'none';
+              var items = document.getElementsByClassName('amp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              var items = document.getElementsByClassName('smp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              var items = document.getElementsByClassName('statzam_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              var items = document.getElementsByClassName('skormp_header_second');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'none';
               };
         };
+
         if (this.parentNode.id == 'amp_header') {
-             var items = document.getElementsByClassName('_numheader3');
+             var items = document.getElementsByClassName('amp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'none';
               };
@@ -135,25 +135,54 @@ $('.hideelembtn').click(function(){
 
         };
         if (this.parentNode.id == 'smp_header') {
-              var items = document.getElementsByClassName('_numheader4');
+              var items = document.getElementsByClassName('smp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'none';
               };
               document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
         };
         if (this.parentNode.id == 'statzam_header') {
-              var items = document.getElementsByClassName('_numheader5');
+              var items = document.getElementsByClassName('statzam_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'none';
               };
               document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
         };
         if (this.parentNode.id == 'smp_out_header') {
-              var items = document.getElementsByClassName('_numheader6');
+              var items = document.getElementsByClassName('skormp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'none';
               };
               document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+         if (this.parentNode.id == 'amp_header_second') {
+             var items = document.getElementsByClassName('amp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases').colSpan - 1;
+
+        };
+        if (this.parentNode.id == 'smp_header_second') {
+              var items = document.getElementsByClassName('smp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        if (this.parentNode.id == 'statzam_header_second') {
+              var items = document.getElementsByClassName('statzam_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases').colSpan - 1;
+        };
+        if (this.parentNode.id == 'smp_out_header_second') {
+              var items = document.getElementsByClassName('skormp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'none';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases').colSpan - 1;
         };
         var count_rows = 0;
         for (let i = 0, len = elemsToHide.length; i < len; i++)
@@ -178,7 +207,7 @@ $('.hideelembtn').click(function(){
         }
     }
     else {
-        $(this.firstChild).addClass('icon-circle-minus');
+        $(this.firstChild).addClass('icon-circle-with-cross');
         $(this.firstChild).removeClass('icon-circle-plus');
         var elemsToDisplay = document.getElementsByClassName(this.parentNode.id);
         for (let i = 0, len = elemsToDisplay.length; i < len; i++){
@@ -271,297 +300,7 @@ $('#colorDiff').change(function () {
         }
 
 });
-$('#coord_d_1').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_illness/adult?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_2').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_illness/pensioners?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_3').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_illness/babies?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_4').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_illness/child?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_5').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_illness/all?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
 
-$('#coord_d_6').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_death/adult?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_7').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_death/pensioners?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_8').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_death/babies?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_9').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_death/child?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
-$('#coord_d_10').click(function () {
-    let smo_to_server_checked = document.getElementsByClassName('checked_smo');
-    let smo_to_server = '';
-    for( let i = 0, len=smo_to_server_checked.length; i < len; i++) {
-        if (i != (smo_to_server_checked.length - 1)) {
-            smo_to_server += String(smo_to_server_checked[i].value) + ','
-        }
-        else {
-            smo_to_server += String(smo_to_server_checked[i].value)
-        }
-    };
-    let mo_to_server_checked = document.getElementsByClassName('checked_mo');
-    let mo_to_server = '';
-    for( let i = 0, len=mo_to_server_checked.length; i < len; i++) {
-        if (i != (mo_to_server_checked.length - 1)) {
-            mo_to_server += String(mo_to_server_checked[i].value) + ','
-        }
-        else {
-            mo_to_server += String(mo_to_server_checked[i].value)
-        }
-    };
-    var selected_year_1 = convertYear(document.getElementById('select_year_1').querySelector('.chosen-value').value);
-    var selected_year_2 = convertYear(document.getElementById('select_year_2').querySelector('.chosen-value').value);
-    var selected_month_1 = convertMonth(document.getElementById('select_month_1').querySelector('.chosen-value').value);
-    var selected_month_2 = convertMonth(document.getElementById('select_month_2').querySelector('.chosen-value').value);
-    this.href = '/coordination_death/all?selected_smo=' + smo_to_server + '&selected_mo=' + mo_to_server +
-    '&selected_year_1=' + selected_year_1 + '&selected_month_1=' + selected_month_1 +
-    '&selected_year_2=' + selected_year_2 + '&selected_month_2=' + selected_month_2;
-});
 $('#coord_d_runner').click(function () {
     let smo_to_server = '';
     let mo_to_server = '';
@@ -606,141 +345,6 @@ $('#report_d_1_18_btn').click(function () {
     this.href = '?year=' + selected_year_1 + '&month=' + selected_month_1;
 });
 
-
-
-$('.showelembtn').click(function () {
-    this.style.display = 'none';
-    var _cutId = this.id.split('hidden')[0];
-    var table = document.getElementById('table_illness');
-    var elemsToHide = document.getElementsByClassName(_cutId);
-        if (_cutId.split(/\s+/).length > 1) {
-            var parentElemsToShow = document.getElementsByClassName(_cutId.split(/\s+/)[0] + 'parent');
-        }
-        else {
-            var parentElemsToShow = new Array();
-        }
-
-        if (_cutId == 'smo_header') {
-
-           var items = document.getElementsByClassName('numheader0');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              }
-        };
-        if (_cutId == 'mo_header') {
-              var items = document.getElementsByClassName('numheader1');
-
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              }
-        };
-        if (_cutId == 'illness_header') {
-
-              document.getElementById('string_code_header').style.display = 'table-cell';
-              document.getElementById('nosologies_header').style.display = 'table-cell';
-              var items = document.getElementsByClassName('_numheader0');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              var items = document.getElementsByClassName('_numheader1');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-        };
-        if (_cutId == 'mkb_header') {
-              var items = document.getElementsByClassName('_numheader2');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-        };
-        if (_cutId == 'all_cases') {
-              var items = document.getElementsByClassName('_numheader3');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('amp_header').style.display = 'table-cell';
-              var items = document.getElementsByClassName('_numheader4');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('smp_header').style.display = 'table-cell';
-              var items = document.getElementsByClassName('_numheader5');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('statzam_header').style.display = 'table-cell';
-              var items = document.getElementsByClassName('_numheader6');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('smp_out_header').style.display = 'table-cell';
-        };
-        if (_cutId == 'string_code_header') {
-              document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
-              var items = document.getElementsByClassName('_numheader0');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-        };
-        if (_cutId == 'nosologies_header') {
-             document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan - 1;
-             var items = document.getElementsByClassName('_numheader1');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-        };
-        if (_cutId == 'amp_header') {
-             var items = document.getElementsByClassName('_numheader3');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
-
-        };
-        if (_cutId == 'smp_header') {
-              var items = document.getElementsByClassName('_numheader4');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
-        };
-        if (_cutId == 'statzam_header') {
-              var items = document.getElementsByClassName('_numheader5');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
-        };
-        if (_cutId == 'smp_out_header') {
-              var items = document.getElementsByClassName('_numheader6');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan - 1;
-        };
-        var count_rows = 0;
-        for (let i = 0, len = elemsToHide.length; i < len; i++)
-         {
-             if (elemsToHide[i].style.display != 'table-cell') {
-                count_rows ++;
-             };
-            elemsToHide[i].style.display = 'table-cell';
-
-            }
-
-        for (let i = 0, len = parentElemsToHide.length; i < len; i++) {
-            parentElemsToHide[i].rowSpan -= count_rows;
-        };
-        if (parentElemsToHide.length == 0) {
-            var notHided = document.getElementsByClassName(_cutId+'child');
-            if (notHided.length > 0) {
-                for (let j = 0, len_0 = notHided.length; j < len_0; j++) {
-                    notHided[j].style.display = 'table-cell';
-                };
-            };
-        }
-
-    });
 var table_illness = document.getElementById('table_illness');
 load_checkboxes();
 
@@ -1749,6 +1353,52 @@ $(document).on('click', '.btngetclasses_d', function () {
     };
 
 });
+$(document).on('click', '.minimize_smo', function () {
+    var _list = this.firstChild.className;
+    if ( _list.indexOf("icon-circle-minus") != -1 ) {
+        $(this.firstChild).addClass('icon-circle-plus');
+        $(this.firstChild).removeClass('icon-circle-minus');
+        var childRows = document.getElementsByClassName(this.parentNode.id);
+        this.parentNode.rowSpan = 1;
+        for (let i = 0, len = childRows.length; i < len; i ++) {
+            if ((childRows[i].tagName == 'TR')) {
+                childRows[i].style.display = 'none';
+            }
+        }
+
+        var ovrl_row = document.getElementsByClassName(this.parentNode.id + ' all');
+        var newRow = document.getElementById('table_illness').insertRow(ovrl_row[0].rowIndex);
+        var newCell = childRows[0].cells[0].cloneNode(true);
+        newCell.id = newCell.id + 'minimized';
+        newRow.id = newRow.id + 'minimized';
+        newRow.appendChild(newCell);
+        ovrl_row_cells = ovrl_row[0].cells;
+        for (let i = 0, len = ovrl_row_cells.length; i < len; i ++) {
+            var new_cell = ovrl_row_cells[i].cloneNode(true);
+            if (i == 0) {
+              new_cell.id = new_cell.id + 'minimized';
+            };
+            newRow.appendChild(new_cell);
+        }
+    }
+    else {
+        var childRows = document.getElementsByClassName(this.parentNode.id.split('minimized')[0]);
+        document.getElementById('table_illness').deleteRow(this.parentNode.parentNode.rowIndex);
+        this.parentNode.rowSpan = 1;
+        var smo_column = document.getElementById(this.parentNode.id.split('minimized')[0]);
+        smo_column.rowSpan = 0;
+
+        for (let i = 0, len = childRows.length; i < len; i ++) {
+            if ((childRows[i].tagName == 'TR')) {
+                childRows[i].style.display = 'table-row';
+                smo_column.rowSpan +=1;
+            }
+        }
+        $(smo_column.getElementsByTagName('i')[1]).addClass('icon-circle-minus');
+        $(smo_column.getElementsByTagName('i')[1]).removeClass('icon-circle-plus');
+
+    }
+});
 
 $(document).on('DOMNodeInserted', '#table_illness', function () {
     $(document.getElementById('table_illness')).addClass('added_rows');
@@ -1802,65 +1452,49 @@ function showElems(editedItem) {
 
         if (_cutId == 'smo_header') {
 
-           var items = document.getElementsByClassName('numheader0');
+           var items = document.getElementsByClassName('smo_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
               document.getElementById(_cutId).rowSpan = 2;
         };
         if (_cutId == 'mo_header') {
-              var items = document.getElementsByClassName('numheader1');
+              var items = document.getElementsByClassName('mo_header');
 
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               }
         };
         if (_cutId == 'illness_header') {
-              if (!document.getElementById('string_codeheaderhidden')) {
-                  document.getElementById('string_code_header').style.display = 'table-cell';
-              };
-              if (!document.getElementById('nosologies_headerhidden')) {
-                  document.getElementById('nosologies_header').style.display = 'table-cell';
-              };
-              var items = document.getElementsByClassName('_numheader0');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-              var items = document.getElementsByClassName('_numheader1');
-              for ( let i = 0, len=items.length; i < len; i++) {
-                  items[i].style.display = 'table-cell';
-              };
-        };
-        if (_cutId == 'mkb_header') {
-              var items = document.getElementsByClassName('_numheader2');
-              document.getElementById(_cutId).rowSpan = 2;
+
+              var items = document.getElementsByClassName('illness_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
         };
         if (_cutId == 'all_cases') {
-              var items = document.getElementsByClassName('_numheader3');
+              var items = document.getElementsByClassName('amp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
               if (!document.getElementById('amp_headerhidden')) {
                   document.getElementById('amp_header').style.display = 'table-cell';
               };
-              var items = document.getElementsByClassName('_numheader4');
+              var items = document.getElementsByClassName('smp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
               if (!document.getElementById('smp_headerhidden')) {
                   document.getElementById('smp_header').style.display = 'table-cell';
               };
-              var items = document.getElementsByClassName('_numheader5');
+              var items = document.getElementsByClassName('statzam_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
               if (!document.getElementById('statzam_headerhidden')) {
                   document.getElementById('statzam_header').style.display = 'table-cell';
               };
-              var items = document.getElementsByClassName('_numheader6');
+              var items = document.getElementsByClassName('skormp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
@@ -1868,22 +1502,38 @@ function showElems(editedItem) {
                   document.getElementById('smp_out_header').style.display = 'table-cell';
               };
         };
-        if (_cutId == 'string_code_header') {
-              document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan + 1;
-              var items = document.getElementsByClassName('_numheader0');
+        if (_cutId == 'all_cases_second') {
+              var items = document.getElementsByClassName('amp_header_second');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
-        };
-        if (_cutId == 'nosologies_header') {
-             document.getElementById('illness_header').colSpan = document.getElementById('illness_header').colSpan + 1;
-             var items = document.getElementsByClassName('_numheader1');
+              if (!document.getElementById('amp_header_secondhidden')) {
+                  document.getElementById('amp_header_second').style.display = 'table-cell';
+              };
+              var items = document.getElementsByClassName('smp_header_second');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
+              };
+              if (!document.getElementById('smp_header_secondhidden')) {
+                  document.getElementById('smp_header_second').style.display = 'table-cell';
+              };
+              var items = document.getElementsByClassName('statzam_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              if (!document.getElementById('statzam_header_secondhidden')) {
+                  document.getElementById('statzam_header_second').style.display = 'table-cell';
+              };
+              var items = document.getElementsByClassName('skormp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              if (!document.getElementById('smp_out_header_secondhidden')) {
+                  document.getElementById('smp_out_header_second').style.display = 'table-cell';
               };
         };
         if (_cutId == 'amp_header') {
-             var items = document.getElementsByClassName('_numheader3');
+             var items = document.getElementsByClassName('amp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
@@ -1891,25 +1541,54 @@ function showElems(editedItem) {
 
         };
         if (_cutId == 'smp_header') {
-              var items = document.getElementsByClassName('_numheader4');
+              var items = document.getElementsByClassName('smp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
               document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan + 1;
         };
         if (_cutId == 'statzam_header') {
-              var items = document.getElementsByClassName('_numheader5');
+              var items = document.getElementsByClassName('statzam_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
               document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan + 1;
         };
         if (_cutId == 'smp_out_header') {
-              var items = document.getElementsByClassName('_numheader6');
+              var items = document.getElementsByClassName('skormp_header');
               for ( let i = 0, len=items.length; i < len; i++) {
                   items[i].style.display = 'table-cell';
               };
               document.getElementById('all_cases').colSpan = document.getElementById('all_cases').colSpan + 1;
+        };
+        if (_cutId == 'amp_header_second') {
+             var items = document.getElementsByClassName('amp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases_second').colSpan + 1;
+
+        };
+        if (_cutId == 'smp_header_second') {
+              var items = document.getElementsByClassName('smp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases_second').colSpan + 1;
+        };
+        if (_cutId == 'statzam_header_second') {
+              var items = document.getElementsByClassName('statzam_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases_second').colSpan + 1;
+        };
+        if (_cutId == 'smp_out_header_second') {
+              var items = document.getElementsByClassName('skormp_header_second');
+              for ( let i = 0, len=items.length; i < len; i++) {
+                  items[i].style.display = 'table-cell';
+              };
+              document.getElementById('all_cases_second').colSpan = document.getElementById('all_cases_second').colSpan + 1;
         };
         var count_rows = 0;
         for (let i = 0, len = elemsToHide.length; i < len; i++)
@@ -1924,13 +1603,17 @@ function showElems(editedItem) {
             };
         count_rows = hideRows(editedItem, elemsToHide);
 
-        var parentTableRow = document.getElementById(_cutId+'rowsmo');
+        var parentTableRows = document.getElementsByClassName(_cutId);
 
-        if (!parentTableRow){
+        if (parentTableRows.length == 0){
 
         }
         else {
-            document.getElementById(_cutId+'rowsmo').style.display = 'table-row';
+            for (let m = 0, len_1 = parentTableRows.length; m < len_1; m++) {
+                if ((parentTableRows[m].id.startsWith(_cutId)) & (parentTableRows[m].tagName == "TR")) {
+                    parentTableRows[m].style.display = 'table-row';
+                }
+            }
         }
         if (count_rows != 0) {
             document.getElementById(_cutId).rowSpan = count_rows + 1;
@@ -1963,12 +1646,11 @@ function showElems(editedItem) {
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
                     }
 
                     else if (hidden_col_id == 'mo_header') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('numheader1');
+                        var items = document.getElementsByClassName('mo_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
@@ -1976,72 +1658,54 @@ function showElems(editedItem) {
 
                     else if (hidden_col_id == 'illness_header') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader0');
+                        var items = document.getElementsByClassName('illness_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
-                        var items = document.getElementsByClassName('_numheader1');
-                        for (let i = 0, len = items.length; i < len; i++) {
-                            items[i].style.display = 'none';
-                        }
-                        ;
-                    }
-
-                    else if (hidden_col_id == 'mkb_header') {
-                        document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader2');
-                        for (let i = 0, len = items.length; i < len; i++) {
-                            items[i].style.display = 'none';
-                        }
-                        ;
                     }
 
                     else if (hidden_col_id == 'all_cases') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader3');
+                        var items = document.getElementsByClassName('amp_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
-                        var items = document.getElementsByClassName('_numheader4');
+                        var items = document.getElementsByClassName('smp_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
-                        var items = document.getElementsByClassName('_numheader5');
+                        var items = document.getElementsByClassName('statzam_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
-                        var items = document.getElementsByClassName('_numheader6');
+                        var items = document.getElementsByClassName('skormp_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
                     }
-
-                    else if (hidden_col_id == 'string_code_header') {
+                    else if (hidden_col_id == 'all_cases_second') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader0');
+                        var items = document.getElementsByClassName('amp_header_second');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
-                    }
-
-                    else if (hidden_col_id == 'nosologies_header') {
-                        document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader1');
+                        var items = document.getElementsByClassName('smp_header_second');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
-                        ;
+                        var items = document.getElementsByClassName('statzam_header_second');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
+                        var items = document.getElementsByClassName('skormp_header_second');
+                        for (let i = 0, len = items.length; i < len; i++) {
+                            items[i].style.display = 'none';
+                        }
                     }
 
                     else if (hidden_col_id == 'amp_header') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader3');
+                        var items = document.getElementsByClassName('amp_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
@@ -2051,7 +1715,7 @@ function showElems(editedItem) {
 
                     else if (hidden_col_id == 'smp_header') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader4');
+                        var items = document.getElementsByClassName('smp_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
@@ -2060,7 +1724,7 @@ function showElems(editedItem) {
 
                     else if (hidden_col_id == 'statzam_header') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader5');
+                        var items = document.getElementsByClassName('statzam_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
@@ -2069,7 +1733,7 @@ function showElems(editedItem) {
 
                     else if (hidden_col_id == 'smp_out_header') {
                         document.getElementById(hidden_col_id).style.display = 'none';
-                        var items = document.getElementsByClassName('_numheader6');
+                        var items = document.getElementsByClassName('smp_out_header');
                         for (let i = 0, len = items.length; i < len; i++) {
                             items[i].style.display = 'none';
                         }
@@ -2080,7 +1744,7 @@ function showElems(editedItem) {
 
                         }
                         else {
-                            if (document.getElementById(hidden_col_id).classList.contains('numheader1')) {
+                            if (document.getElementById(hidden_col_id).classList.contains('mo_header')) {
                                 document.getElementById(hidden_col_id).style.display = 'none';
 
                                 let array_of_hidden_children = document.getElementsByClassName(hidden_col_id);

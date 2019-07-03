@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% block main %}
-
     <div class="col-md-8 col-md-offset-2 gtco-heading text-center" style="margin-top: 20px;"
          xmlns="http://www.w3.org/1999/html">
                     <h2 style="font-family: 'Calibri Light'">Координационный совет. Заболеваемость</h2><br>
@@ -50,22 +49,22 @@
                     <table id="table_illness" class="table-striped table-death"; style="display: table; margin-left: 2%; margin-right: 2%; margin-bottom: 30px; font-family: 'Calibri Light'">
 
                         <tr style="display: table-row">
-                            <th style="display: table-cell; width: 10%" rowspan="2" class="table-death-head" id="smo_header">Страховая медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell; width: 15%" rowspan="2" class="table-death-head" id="mo_header">Медицинская организация<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell; width: 25%" colspan="1" rowspan="2" class="table-death-head" id="illness_header">Заболевания<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell; width: 25%" colspan="4" class="table-death-head" id="all_cases">{{ date_to_show.0 }}<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell; width: 25%" colspan="4" class="table-death-head" id="all_cases_second">{{ date_to_show.1 }}<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell; width: 10%" rowspan="2" class="table-death-head" id="smo_header">Страховая медицинская организация<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell; width: 15%" rowspan="2" class="table-death-head" id="mo_header">Медицинская организация<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell; width: 25%" colspan="1" rowspan="2" class="table-death-head" id="illness_header">Заболевания<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell; width: 25%" colspan="4" class="table-death-head" id="all_cases">{{ date_to_show.0 }}<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell; width: 25%" colspan="4" class="table-death-head" id="all_cases_second">{{ date_to_show.1 }}<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
 
                         </tr>
                         <tr style="display: table-row">
-                            <th style="display: table-cell" class="table-death-head" id="amp_header">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell" class="table-death-head" id="smp_header">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell" class="table-death-head" id="statzam_header">Стационарно-замещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell" class="table-death-head" id="smp_out_header">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell" class="table-death-head" id="amp_header_second">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell" class="table-death-head" id="smp_header_second">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell" class="table-death-head" id="statzam_header_second">Стационарно-замещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
-                            <th style="display: table-cell" class="table-death-head" id="smp_out_header_second">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="amp_header">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_header">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="statzam_header">Стационарно-замещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_out_header">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="amp_header_second">Амбулаторно-поликлинической медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_header_second">Стационарной медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="statzam_header_second">Стационарно-замещающей медицинской помощи<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
+                            <th style="display: table-cell" class="table-death-head" id="smp_out_header_second">Скорой медицинской помощи вне медицинской организации<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a></th>
                         </tr>
                         {% for smo, mo_dictionary in first_period.items %}
                             {% for mo, values_tuple in mo_dictionary.items %}
@@ -73,7 +72,9 @@
                                     <tr class="{{ smo }} {{ mo }}" id="{{ smo }} {{ mo }} {{ forloop.counter }}row">
                                         {% if forloop.parentloop.first and forloop.first %}
                                             <td style="display: table-cell" class="smo_header " id="{{ smo }}" rowspan="{{ smo_column_length|get_item:smo }}">
-                                                {{ names|get_name_by_id:smo }}<a class="hideelembtn"><i class="icon icon-circle-minus"></i></a></td>
+                                                {{ names|get_name_by_id:smo }}<a class="hideelembtn"><i class="icon icon-circle-with-cross"></i></a>
+                                            <a class="minimize_smo"><i class="icon icon-circle-minus"></i></a>
+                                            </td>
                                         {% endif %}
                                         {% if forloop.first %}
                                             <td class="mo_header {{ smo }}" id="{{ smo }} {{ mo }}"
@@ -122,33 +123,6 @@
                                             <div><span>{{ values.11 }}</span></div>
                                             <p hidden="true">{{ values.3|get_percents:values.11 }}</p>
                                         </td>
-{#                                        {%  for val in values %}#}
-{#                                            {% if forloop.counter0 == 0 %}#}
-{#                                                <td class="amp_header {{ smo }} {{ mo }}">{{ val }}</td>#}
-{#                                            {% endif %}#}
-{#                                            {% if forloop.counter0 == 1 %}#}
-{#                                                <td class="smp_header {{ smo }} {{ mo }}">{{ val }}</td>#}
-{#                                            {% endif %}#}
-{#                                            {% if forloop.counter0 == 2 %}#}
-{#                                                <td class="statzam_header {{ smo }} {{ mo }}">{{ val}}</td>#}
-{#                                            {% endif %}#}
-{#                                            {% if forloop.counter0 == 3 %}#}
-{#                                                <td class="smp_out_header {{ smo }} {{ mo }}">{{ val }}</td>#}
-{#                                            {% endif %}#}
-{#                                            {% if forloop.counter0 == 4 %}#}
-{#                                                <td class="amp_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
-{#                                            {% endif %}#}
-{#                                            {% if forloop.counter0 == 5 %}#}
-{#                                                <td class="smp_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
-{#                                            {% endif %}#}
-{#                                            {% if forloop.counter0 == 6 %}#}
-{#                                                <td class="statzam_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
-{#                                            {% endif %}#}
-{#                                            {% if forloop.counter0 == 7 %}#}
-{#                                                <td class="smp_out_header_second {{ smo }} {{ mo }}">{{ val }}</td>#}
-{#                                            {% endif %}#}
-{#                                        {% endfor %}#}
-
                                     {% endfor %}
                                 </tr>
                             {% endfor %}
